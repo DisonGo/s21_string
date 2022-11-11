@@ -3,13 +3,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 int main() {
-    char* dest = malloc(16);
-    char* dest2 = malloc(16);
-    const char* str = "Teew str";
-    const char* str2 = "Teew str";
-    printf("%s\n", s21_strcat(dest, str));
-    printf("%s\n", s21_strcat(dest2, str2));
-    printf("1:%s\n2:%s\n", dest, dest2);
-    printf("%i\n", memcmp(dest, str, 1000));
+    char text[40] = ",, ,  as , d d , , , ,a   s d sssdddd";
+    // printf("%s\n", s21_strstr(text, " "));
+    char delims[5] = " d";
+    char* token = s21_strtok(text, delims);
+    // char* token = strtok(text, delims);
+    while (token != NULL) {
+        printf("%s\n", token);
+        token = s21_strtok(NULL, delims);
+        // token = strtok(NULL, delims);
+    }
     return 0;
 }
