@@ -4,7 +4,7 @@ DIRS		= ./Functions
 SOURCES 	:= main.c
 # SOURCES		+= $(shell find $(DIRS) -name '*.h')
 ODIR 		=./obj
-Flags 		= -Werror -Wall -Wextra -std=c11
+Flags 		= -Werror -Wall -Wextra -std=c11 -g
 gcc 		= gcc $(Flags)
 OS 			:= $(shell uname -s)
 clang_path	= ../../materials/build/scripts/
