@@ -43,7 +43,7 @@ Field* read_fields(Field* fields, const char *pattern) {
                 fields[j].flag |= pls_f;
             }
             if (flag == blnk_f && !(fields[j].flag & pls_f)) fields[j].flag |= blnk_f;
-            if (!(flag >= mns_f && flag <= pls_f)) cur_state = width_state;
+            if (!(flag >= mns_f && flag <= blnk_f)) cur_state = width_state;
         }
         if (cur_state & width_state){
             char* num = calloc(30, sizeof(char));
