@@ -16,8 +16,6 @@ Field* read_fields(Field* fields, const char *pattern) {
     char* buf = calloc(s21_strlen(pattern) + 1, sizeof(char));
     if (!buf) return S21_NULL;
     s21_strcpy(buf, pattern);
-    
-    // char* beg;
     char value_buf[VALLUE_BUF_SIZE] = "";
     Read_states cur_state = std_state;
     for (s21_size_t i = 0, j = 0; *buf != '\0' && j < 100; buf++, i++) {
@@ -46,7 +44,7 @@ Field* read_fields(Field* fields, const char *pattern) {
             if (!(flag >= mns_f && flag <= blnk_f)) cur_state = width_state;
         }
         if (cur_state & width_state){
-            char* num = calloc(30, sizeof(char));
+            char* num = calloc(16, sizeof(char));
             char* num_beg = num;
             if (!num) throw_pattern_error(WIDTH_STATE_ERROR " " MEMORY_ERROR);
             if (s21_strchr(DECIMAL_NUMS, *buf)) {
@@ -57,12 +55,32 @@ Field* read_fields(Field* fields, const char *pattern) {
                 if (width == 0) throw_pattern_error(WIDTH_STATE_ERROR " width = 0");
                 fields[j].width = width;
             }
+            free(num_beg);
             cur_state = precise_state;
         }
         if (cur_state & precise_state){
+            if (flag == dot_f) {
+                buf++;
+                char* num = calloc(16, sizeof(char));
+                char* num_beg = num;
+                if (!num) throw_pattern_error(PRECISE_STATE_ERROR " " MEMORY_ERROR);
+                if (s21_strchr(DECIMAL_NUMS, *buf)) {
+                    while(*buf != '\0' && (flag = flag_map(*buf)) == std_f)
+                        *num++ = *buf++;
+                    if (*num_beg == '0' && *(num_beg + 1) == '\0') 
+                        throw_pattern_error(PRECISE_STATE_ERROR " Bad num");
+                    int precision = atoi(num_beg);
+                    fields[j].precise = precision;
+                }
+                free(num_beg);
+            }
             cur_state = length_state;
         }
         if (cur_state & length_state){
+            if (flag >= h_f && flag <= l_f) {
+                fields[j].length |= flag;
+                continue;
+            }
             cur_state = specifier_state;
         }
         if (cur_state & specifier_state){

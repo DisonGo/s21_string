@@ -8,11 +8,12 @@ int main() {
     // printf("%s",(char*) s21_trim(text, "1"));
     // float a = -123222.231;
     Field fields[100] = {0};
-    read_fields(fields, "sda%-30faaa%i%dAwe");
+    read_fields(fields, "sda%-30.2hlfaaa% i%d-Awe");
     for (int i = 0; i < 100; i++) {
         if (fields[i].specifier || fields[i].flag ||
             fields[i].width || fields[i].precise ||
             fields[i].value[0] != '\0') {
+            printf("FIELD[%d]:\n",i);
             printf("spec:%i\n",fields[i].specifier);
             printf("flag:%i\n",fields[i].flag);
             printf("width:%i\n",fields[i].width);
@@ -21,6 +22,5 @@ int main() {
             printf("value:%s\n\n",fields[i].value);
         }
     } 
-    // printf("sda%-+30f", a);
     return 0;
 }
