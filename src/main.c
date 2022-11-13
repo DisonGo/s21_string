@@ -3,24 +3,27 @@
 #include "string.h"
 #include <stdio.h>
 #include <stdlib.h>
+void printField(Field f, int i) {
+    if (!(f.specifier || f.flag || f.width|| f.precise|| f.length|| f.value[0] != '\0')) return;
+    printf("%3i|", i);
+    printf("%-8i ",f.specifier);
+    printf("%-8i ",f.flag);
+    printf("%-8i ",f.width);
+    printf("%-8i ",f.precise);
+    printf("%-8i ",f.length);
+    printf("%-s\n",f.value);
+}
+void printFields(Field* arr, s21_size_t size) {
+    if (arr && size) {
+        printf("ind|%-8s %-8s %-8s %-8s %-8s %-s\n","spec","flag","width","precise","length","value");
+        for (int i = 0; i < 100; i++) printField(arr[i], i);
+    }
+}
 int main() {
-    // char text[100] = "121ADEssdWDA11212";
-    // printf("%s",(char*) s21_trim(text, "1"));
-    // float a = -123222.231;
     Field fields[100] = {0};
-    read_fields(fields, "sda%-30.2hlfaaa% i%d-Awe");
-    for (int i = 0; i < 100; i++) {
-        if (fields[i].specifier || fields[i].flag ||
-            fields[i].width || fields[i].precise ||
-            fields[i].value[0] != '\0') {
-            printf("FIELD[%d]:\n",i);
-            printf("spec:%i\n",fields[i].specifier);
-            printf("flag:%i\n",fields[i].flag);
-            printf("width:%i\n",fields[i].width);
-            printf("precise:%i\n",fields[i].precise);
-            printf("length:%i\n",fields[i].length);
-            printf("value:%s\n\n",fields[i].value);
-        }
-    } 
+    const char* input_pattern = "sda%-3s3.10sadhlfaaa% i%d-Awe";
+    read_fields(fields, input_pattern);
+    printf("Input string:%s\n", input_pattern);
+    printFields(fields, 100);
     return 0;
 }
