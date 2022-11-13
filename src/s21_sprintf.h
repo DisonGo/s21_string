@@ -47,6 +47,12 @@ typedef struct _field {
     char value[VALLUE_BUF_SIZE];
 }Field;
 Field* read_fields(Field* fields, const char *pattern);
+int std_state_func(Flag_syms flag, char* buf, char* value_buf, Field* fld, s21_size_t* fld_j, Read_states* cur_state);
+int flag_state_func(Flag_syms flag, Field* fld, Read_states* cur_state);
+int width_state_func(Flag_syms* flag, char* buf, Field* fld, Read_states* cur_state);
+int precise_state_func(Flag_syms* flag, char* buf, Field* fld, Read_states* cur_state);
+int length_state_func(Flag_syms flag, Field* fld, Read_states* cur_state);
+int specifier_state_func(Flag_syms flag, Field* fld, s21_size_t* fld_j, Read_states* cur_state);
 Flag_syms flag_map(int c);
 void throw_pattern_error(const char* error);
 void resetBuffer(char* str, s21_size_t size);
