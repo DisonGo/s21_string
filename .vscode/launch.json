@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug",
+            "program": "${workspaceFolder}/src/s21_string",
+            "args": [],
+            "cwd": "${workspaceFolder}/src",
+            "preLaunchTask": "Build project"
+        }
+    
+    ]
+}
