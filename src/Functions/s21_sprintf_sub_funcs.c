@@ -1,11 +1,17 @@
 #include "../s21_sprintf.h"
 #include <stdio.h>
 #include "string.h"
+s21_size_t count_patterns(Field* fields) {
+  s21_size_t count = 0, i;
+  for (i = 0; i < MAX_ARGS; i++)
+    if (fields[i].specifier != std_f) count++;
+  return count;
+}
 int std_state_func(Flag_syms flag, char* buf, char* value_buf, Field* fld, s21_size_t* fld_j, Read_states* cur_state)  {
   if (!(flag & prcnt_f)) strncat(value_buf, buf, 1);
   if ((flag & prcnt_f || *(buf + 1) == '\0')) {
     if (value_buf[0] != '\0') {
-      fld->flag = std_f;
+      fld->specifier = std_f;
       s21_strcpy(fld->value, value_buf);
       resetBuffer(value_buf, VALLUE_BUF_SIZE);
       (*fld_j)++;
