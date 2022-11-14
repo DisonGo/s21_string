@@ -1,11 +1,15 @@
 #ifndef VALLUE_BUF_SIZE
 #define VALLUE_BUF_SIZE 1024
 #endif  // VALLUE_BUF_SIZE
-
+#ifndef OUTPUT_BUF_SIZE
+#define OUTPUT_BUF_SIZE 1 << 12
+#endif  // OUTPUT_BUF_SIZE
 #ifndef S21_SPRINTF_H_
 #define S21_SPRINTF_H_
-#include "s21_string.h"
+#include <stdarg.h>
 #include <stdlib.h>
+
+#include "s21_string.h"
 #define STD_STATE_ERROR "STD_STATE_ERROR"
 #define FLAG_STATE_ERROR "FLAG_STATE_ERROR"
 #define WIDTH_STATE_ERROR "WIDTH_STATE_ERROR"
@@ -14,46 +18,60 @@
 #define SPECIFIER_STATE_ERROR "SPECIFIER_STATE_ERROR"
 #define MEMORY_ERROR "MEMORY_ERROR"
 #define DECIMAL_NUMS "012345689"
+#define MAX_ARGS 100
 typedef enum _flag_syms {
-    std_f   = 1 << 0,
-    c_f     = 1 << 1,
-    d_f     = 1 << 2,
-    i_f     = 1 << 3,
-    f_f     = 1 << 4,
-    s_f     = 1 << 5,
-    u_f     = 1 << 6,
-    mns_f   = 1 << 7,
-    pls_f   = 1 << 8,
-    blnk_f  = 1 << 9,
-    dot_f   = 1 << 10,
-    h_f     = 1 << 11,
-    l_f     = 1 << 12,
-    prcnt_f = 1 << 13,
-}Flag_syms;
+  std_f = 1 << 0,
+  c_f = 1 << 1,
+  d_f = 1 << 2,
+  i_f = 1 << 3,
+  f_f = 1 << 4,
+  s_f = 1 << 5,
+  u_f = 1 << 6,
+  mns_f = 1 << 7,
+  pls_f = 1 << 8,
+  blnk_f = 1 << 9,
+  dot_f = 1 << 10,
+  h_f = 1 << 11,
+  l_f = 1 << 12,
+  prcnt_f = 1 << 13,
+} Flag_syms;
 typedef enum _field_read_states {
-    std_state        = 1 << 0, 
-    flag_state       = 1 << 1, 
-    width_state      = 1 << 2, 
-    precise_state    = 1 << 3, 
-    length_state     = 1 << 4, 
-    specifier_state  = 1 << 5, 
-}Read_states;
+  std_state = 1 << 0,
+  flag_state = 1 << 1,
+  width_state = 1 << 2,
+  precise_state = 1 << 3,
+  length_state = 1 << 4,
+  specifier_state = 1 << 5,
+} Read_states;
 typedef struct _field {
-    int specifier;
-    int flag;
-    int width;
-    int precise;
-    int length;
-    char value[VALLUE_BUF_SIZE];
-}Field;
-Field* read_fields(Field* fields, const char *pattern);
-int std_state_func(Flag_syms flag, char* buf, char* value_buf, Field* fld, s21_size_t* fld_j, Read_states* cur_state);
+  int specifier;
+  int flag;
+  int width;
+  int precise;
+  int length;
+  char value[VALLUE_BUF_SIZE];
+} Field;
+Field* read_fields(Field* fields, const char* pattern);
+s21_size_t count_patterns(Field* fields);
+int std_state_func(Flag_syms flag, char* buf, char* value_buf, Field* fld,
+                   s21_size_t* fld_j, Read_states* cur_state);
 int flag_state_func(Flag_syms flag, Field* fld, Read_states* cur_state);
-int width_state_func(Flag_syms* flag, char* buf, Field* fld, Read_states* cur_state);
-int precise_state_func(Flag_syms* flag, char* buf, Field* fld, Read_states* cur_state);
+int width_state_func(Flag_syms* flag, char** buf, Field* fld,
+                     Read_states* cur_state);
+int precise_state_func(Flag_syms* flag, char** buf, Field* fld,
+                       Read_states* cur_state);
 int length_state_func(Flag_syms flag, Field* fld, Read_states* cur_state);
-int specifier_state_func(Flag_syms flag, Field* fld, s21_size_t* fld_j, Read_states* cur_state);
-Flag_syms flag_map(int c);
+int specifier_state_func(Flag_syms flag, Field* fld, s21_size_t* fld_j,
+                         Read_states* cur_state);
+char* compile_pattern_in_buffer(Field field, char* buffer, va_list args);
+char* s21_itoa(int num, char* res, int base);
+int compile_c_f(char* buffer, int c);
+int compile_d_f(char* buffer, int num);
+int compile_i_f(char* buffer, int num);
+int compile_f_f(char* buffer, double num);
+int compile_s_f(char* buffer, const char* str);
+int compile_u_f(char* buffer, unsigned int num);
 void throw_pattern_error(const char* error);
 void resetBuffer(char* str, s21_size_t size);
+Flag_syms flag_map(int c);
 #endif  // S21_SPRINTF_H_

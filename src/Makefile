@@ -20,6 +20,10 @@ clean:
 	cd ./Functions; make clean
 obj: $(OBJ)
 	cd ./Functions; make
+clang:
+	clang-format --style=Google -n *.c *.h ./*/*.c ./*/*.h
+clang-replace:
+	clang-format --style=Google -i *.c *.h ./*/*.c ./*/*.h
 s21_string: obj
 	$(gcc) $(ODIR)/*.o $(ODIR)/Functions/*.o -o $@
 .PHONY: clean obj clear s21_string
