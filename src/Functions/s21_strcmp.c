@@ -5,4 +5,5 @@ int s21_strcmp(const char *str1, const char *str2) {
     for (s21_size_t i = 0; i < str_length; i++)
         if (!result && (str1[i] != str2[i])) result = str1[i] - str2[i];
     return result;
+    
 }
