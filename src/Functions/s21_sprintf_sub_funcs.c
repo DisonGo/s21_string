@@ -25,14 +25,16 @@ int flag_state_func(Flag_syms flag, Field* fld, Read_states* cur_state) {
   if (!(flag >= mns_f && flag <= blnk_f)) *cur_state = width_state;
   return 1;
 }
-int width_state_func(Flag_syms* flag, char* buf, Field* fld, Read_states* cur_state) {
+int width_state_func(Flag_syms* flag, char** buf, Field* fld, Read_states* cur_state) {
   char* num = calloc(16, sizeof(char));
   char* num_beg = num;
   if (!num) throw_pattern_error(WIDTH_STATE_ERROR " " MEMORY_ERROR);
-  if (s21_strchr(DECIMAL_NUMS, *buf)) {
-    if (*buf == '0') throw_pattern_error(WIDTH_STATE_ERROR " Bad num");
-    while (*buf != '\0' && (*flag = flag_map(*buf)) == std_f)
-      *num++ = *buf++;
+  if (s21_strchr(DECIMAL_NUMS, **buf)) {
+    if (**buf == '0') throw_pattern_error(WIDTH_STATE_ERROR " Bad num");
+    while (**buf != '\0' && (*flag = flag_map(**buf)) == std_f) {
+      *num++ = **buf;
+      (*buf)++;
+    }
     int width = atoi(num_beg);
     if (width == 0) throw_pattern_error(WIDTH_STATE_ERROR " width = 0");
     fld->width = width;
@@ -41,15 +43,17 @@ int width_state_func(Flag_syms* flag, char* buf, Field* fld, Read_states* cur_st
   *cur_state = precise_state;
   return 1;
 }
-int precise_state_func(Flag_syms* flag, char* buf, Field* fld, Read_states* cur_state) {
+int precise_state_func(Flag_syms* flag, char** buf, Field* fld, Read_states* cur_state) {
   if (*flag == dot_f) {
-    buf++;
+    (*buf)++;
     char* num = calloc(16, sizeof(char));
     char* num_beg = num;
     if (!num) throw_pattern_error(PRECISE_STATE_ERROR " " MEMORY_ERROR);
-    if (s21_strchr(DECIMAL_NUMS, *buf)) {
-      while (*buf != '\0' && (*flag = flag_map(*buf)) == std_f)
-        *num++ = *buf++;
+    if (s21_strchr(DECIMAL_NUMS, **buf)) {
+      while (**buf != '\0' && (*flag = flag_map(**buf)) == std_f) {
+        *num++ = **buf;
+        (*buf)++;
+      }
       if (*num_beg == '0' && *(num_beg + 1) != '\0')
         throw_pattern_error(PRECISE_STATE_ERROR " Bad num");
       int precision = atoi(num_beg);

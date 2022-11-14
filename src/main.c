@@ -21,7 +21,7 @@ void printFields(Field* arr, s21_size_t size) {
 }
 int main() {
     Field fields[100] = {0};
-    const char* input_pattern = "sda%-3s3.10sadhlfaaa% i%d-Awe";
+    const char* input_pattern = "sda%-22.1liadhlfaaa% i%d-Awe";
     
     read_fields(fields, input_pattern);
     printf("Input string:%s\n", input_pattern);

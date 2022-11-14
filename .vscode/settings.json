@@ -2,6 +2,7 @@
     "files.associations": {
         "string.h": "c",
         "stdlib.h": "c",
-        "s21_string.h": "c"
+        "s21_string.h": "c",
+        "s21_sprintf.h": "c"
     }
 }
