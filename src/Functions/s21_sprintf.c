@@ -3,19 +3,16 @@ int s21_sprintf(char* str, const char* string, ...) {
   if (!str) return -1;
   Field fields[MAX_ARGS] = {0};
   read_fields(fields, string);
-  s21_size_t pattern_count = count_patterns(fields);
   char output[OUTPUT_BUF_SIZE] = {'\0'};
-  if (pattern_count) {
-    va_list args;
-    va_start(args, string);
-    for (s21_size_t i = 0; i < MAX_ARGS; i++) {
-      if (fields[i].specifier == std_f)
-        s21_strcat(output, fields[i].value);
-      else
-        compile_pattern_in_buffer(fields[i], output, args);
-    }
-    va_end(args);
+  va_list args;
+  va_start(args, string);
+  for (s21_size_t i = 0; i < MAX_ARGS; i++) {
+    if (fields[i].specifier == std_f)
+      s21_strcat(output, fields[i].value);
+    else
+      compile_pattern_in_buffer(fields[i], output, args);
   }
+  va_end(args);
   s21_strcpy(str, output);
   int res = -1;
   return res;
