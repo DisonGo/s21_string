@@ -86,7 +86,7 @@ char* compile_pattern_in_buffer(Field field, char* buffer, va_list args);
 int compile_c_f(char* buffer, int c);
 int compile_d_f(char* buffer, int num, Field fld);
 int compile_i_f(char* buffer, int num, Field fld);
-int compile_f_f(char* buffer, double num);
+int compile_f_f(char* buffer, double num, Field fld);
 int compile_s_f(char* buffer, const char* str, Field fld);
 int compile_u_f(char* buffer, unsigned int num);
 
@@ -100,6 +100,8 @@ int do_precision_transform(char* src, Field fld, s21_size_t size);
 
 char* s21_itoa(int num, char* res, int base);
 char* s21_dtoa(double x, char* res, int after_point);
+int mantissaToStr(int x, char* str, int req_c);
+void reverse_str(char* str);
 void throw_pattern_error(const char* error);
 void resetBuffer(char* str, s21_size_t size);
 int max(int a, int b);

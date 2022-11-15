@@ -116,10 +116,19 @@ int compile_i_f(char* buffer, int num, Field fld) {
   free(str);
   return 1;
 }
-int compile_f_f(char* buffer, double num) {
-  char* str = calloc(30, 1);
+int compile_f_f(char* buffer, double num, Field fld) {
+  if (!num && !fld.precise) return 1;
+  int str_size = 64;
+  if (fld.flag & (pls_f | blnk_f)) str_size++;
+  char* str = calloc(str_size * 2 + 1, 1);
   if (!str) return 0;
-  s21_strcat(buffer, s21_itoa((int)num, str, 10));
+  s21_dtoa(num, str, fld.precise);
+  str_size = max(s21_strlen(str), fld.width);
+  str = realloc(str, str_size + 1);
+  if (!str) return 0;
+  do_flag_transform(str, fld, (num >= 0), str_size);
+  do_width_transform(str, fld, str_size);
+  s21_strcat(buffer, str);
   free(str);
   return 1;
 }
@@ -147,11 +156,12 @@ int compile_u_f(char* buffer, unsigned int num) {
 }
 int do_flag_transform(char* src, Field fld, int sign, s21_size_t size) {
   if (!fld.flag || !sign) return 1;
-  char* buffer = calloc(size, 1);
+  char* buffer = calloc(size + 1, 1);
   if (!buffer || !size) return 0;
   buffer[0] = fld.flag & pls_f ? '+' : fld.flag & blnk_f ? ' ' : '\0';
   s21_strcat(buffer, src);
   s21_strcpy(src, buffer);
+  free(buffer);
   return 1;
 }
 int do_width_transform(char* src, Field fld, s21_size_t size) {
@@ -202,7 +212,7 @@ char* compile_pattern_in_buffer(Field field, char* buffer, va_list args) {
   if (field.specifier == c_f) compile_c_f(buffer, va_arg(args, int));
   if (field.specifier == d_f) compile_d_f(buffer, va_arg(args, int), field);
   if (field.specifier == i_f) compile_i_f(buffer, va_arg(args, int), field);
-  if (field.specifier == f_f) compile_f_f(buffer, va_arg(args, double));
+  if (field.specifier == f_f) compile_f_f(buffer, va_arg(args, double), field);
   if (field.specifier == s_f) compile_s_f(buffer, va_arg(args, char*), field);
   if (field.specifier == u_f) compile_u_f(buffer, va_arg(args, unsigned int));
   return buffer;
@@ -214,10 +224,21 @@ char* s21_dtoa(double x, char* res, int after_point) {
   res[s21_strlen(res)] = '.';
   mantissa = mantissa * pow(10, after_point);
   char* c_mantissa = calloc(64 + 1, sizeof(char));
-  s21_itoa((int)mantissa, c_mantissa, 10);
+  mantissaToStr((int)mantissa, c_mantissa, after_point);
   s21_strcat(res, c_mantissa);
   free(c_mantissa);
   return res;
+}
+int mantissaToStr(int x, char* str, int req_c) {
+  int i = 0;
+  while (x) {
+      str[i++] = (x % 10) + '0';
+      x = x / 10;
+  }
+  while (i < req_c) str[i++] = '0';
+  reverse_str(str);
+  str[i] = '\0';
+  return i;
 }
 char* s21_itoa(int num, char* res, int base) {
   if (base < 2 || base > 36) {
@@ -239,6 +260,17 @@ char* s21_itoa(int num, char* res, int base) {
     *ptr1++ = tmp_char;
   }
   return res;
+}
+void reverse_str(char* str) {
+  static int i, l, temp;
+  l = s21_strlen(str);
+  if (i < l / 2) {
+    temp = str[i];
+    str[i] = str[l - i - 1];
+    str[l - i - 1] = temp;
+    i++;
+    reverse_str(str);
+  }
 }
 void throw_pattern_error(const char* error) {
   fprintf(stderr, "Pattern error: %s", error);
