@@ -83,17 +83,25 @@ int specifier_state_func(Flag_syms flag, Field* fld, s21_size_t* fld_j,
 
 char* compile_pattern_in_buffer(Field field, char* buffer, va_list args);
 int compile_c_f(char* buffer, int c);
-int compile_d_f(char* buffer, int num);
-int compile_i_f(char* buffer, int num);
+int compile_d_f(char* buffer, int num, Field fld);
+int compile_i_f(char* buffer, int num, Field fld);
 int compile_f_f(char* buffer, double num);
-int compile_s_f(char* buffer, const char* str);
+int compile_s_f(char* buffer, const char* str, Field fld);
 int compile_u_f(char* buffer, unsigned int num);
+
+// Pattern value transform functions
+
+int do_flag_transform(char* src, Field fld, int sign, s21_size_t size);
+int do_width_transform(char* src, Field fld, s21_size_t size);
+int do_precision_transform(char* src, Field fld, s21_size_t size);
 
 // Utility functions
 
 char* s21_itoa(int num, char* res, int base);
 void throw_pattern_error(const char* error);
 void resetBuffer(char* str, s21_size_t size);
+int max(int a, int b);
+int min(int a, int b);
 s21_size_t count_patterns(Field* fields);
 Flag_syms flag_map(int c);
 #endif  // S21_SPRINTF_H_

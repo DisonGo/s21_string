@@ -25,16 +25,16 @@ void printFields(Field* arr, s21_size_t size) {
 }
 int main() {
   Field fields[100] = {0};
-  const char* input_pattern = "Hello Player #";
+  const char* input_pattern = "%10.4s";
+  const char* str2 = "123456";
   char* str = calloc(100, 1);
-  int a;
-  printf("Input your #:");
-  scanf("%i", &a);
-  s21_sprintf(str, input_pattern);
+  // int a = -123;
+  s21_sprintf(str, input_pattern, str2);
   read_fields(fields, input_pattern);
   printFields(fields, 100);
   printf("Input string:%s\n", input_pattern);
-  printf("Output:%s\n", str);
+  printf("Output:'%s'\n", str);
+  printf(input_pattern, str2);
   free(str);
   return 0;
 }
