@@ -8,6 +8,7 @@
 #define S21_SPRINTF_H_
 #include <stdarg.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include "s21_string.h"
 #define STD_STATE_ERROR "STD_STATE_ERROR"
@@ -98,6 +99,7 @@ int do_precision_transform(char* src, Field fld, s21_size_t size);
 // Utility functions
 
 char* s21_itoa(int num, char* res, int base);
+char* s21_dtoa(double x, char* res, int after_point);
 void throw_pattern_error(const char* error);
 void resetBuffer(char* str, s21_size_t size);
 int max(int a, int b);
