@@ -18,7 +18,14 @@
 #define SPECIFIER_STATE_ERROR "SPECIFIER_STATE_ERROR"
 #define MEMORY_ERROR "MEMORY_ERROR"
 #define DECIMAL_NUMS "012345689"
+#define ITOA_SYM_MAP           \
+  "zyxwvutsrqponmlkjihgfedcba" \
+  "9876543210123456789"        \
+  "abcdefghijklmnopqrstuvwxyz"
 #define MAX_ARGS 100
+
+// Pattern symbols bitmask enum
+
 typedef enum _flag_syms {
   std_f = 1 << 0,
   c_f = 1 << 1,
@@ -35,6 +42,9 @@ typedef enum _flag_syms {
   l_f = 1 << 12,
   prcnt_f = 1 << 13,
 } Flag_syms;
+
+// Pattern parser read states bitmask enum
+
 typedef enum _field_read_states {
   std_state = 1 << 0,
   flag_state = 1 << 1,
@@ -43,6 +53,9 @@ typedef enum _field_read_states {
   length_state = 1 << 4,
   specifier_state = 1 << 5,
 } Read_states;
+
+// Pattern (Field) struct
+
 typedef struct _field {
   int specifier;
   int flag;
@@ -51,8 +64,10 @@ typedef struct _field {
   int length;
   char value[VALLUE_BUF_SIZE];
 } Field;
+
+// Pattern parser read states functions
+
 Field* read_fields(Field* fields, const char* pattern);
-s21_size_t count_patterns(Field* fields);
 int std_state_func(Flag_syms flag, char* buf, char* value_buf, Field* fld,
                    s21_size_t* fld_j, Read_states* cur_state);
 int flag_state_func(Flag_syms flag, Field* fld, Read_states* cur_state);
@@ -63,15 +78,22 @@ int precise_state_func(Flag_syms* flag, char** buf, Field* fld,
 int length_state_func(Flag_syms flag, Field* fld, Read_states* cur_state);
 int specifier_state_func(Flag_syms flag, Field* fld, s21_size_t* fld_j,
                          Read_states* cur_state);
+
+// (Pattern x argument) linker functions
+
 char* compile_pattern_in_buffer(Field field, char* buffer, va_list args);
-char* s21_itoa(int num, char* res, int base);
 int compile_c_f(char* buffer, int c);
 int compile_d_f(char* buffer, int num);
 int compile_i_f(char* buffer, int num);
 int compile_f_f(char* buffer, double num);
 int compile_s_f(char* buffer, const char* str);
 int compile_u_f(char* buffer, unsigned int num);
+
+// Utility functions
+
+char* s21_itoa(int num, char* res, int base);
 void throw_pattern_error(const char* error);
 void resetBuffer(char* str, s21_size_t size);
+s21_size_t count_patterns(Field* fields);
 Flag_syms flag_map(int c);
 #endif  // S21_SPRINTF_H_

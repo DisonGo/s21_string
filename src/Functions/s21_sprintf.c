@@ -1,11 +1,11 @@
 #include "../s21_sprintf.h"
-int s21_sprintf(char* str, const char* string, ...) {
+int s21_sprintf(char* str, const char* format, ...) {
   if (!str) return -1;
   Field fields[MAX_ARGS] = {0};
-  read_fields(fields, string);
+  read_fields(fields, format);
   char output[OUTPUT_BUF_SIZE] = {'\0'};
   va_list args;
-  va_start(args, string);
+  va_start(args, format);
   for (s21_size_t i = 0; i < MAX_ARGS; i++) {
     if (fields[i].specifier == std_f)
       s21_strcat(output, fields[i].value);
@@ -14,7 +14,7 @@ int s21_sprintf(char* str, const char* string, ...) {
   }
   va_end(args);
   s21_strcpy(str, output);
-  int res = -1;
+  int res = s21_strlen(str);
   return res;
 }
 

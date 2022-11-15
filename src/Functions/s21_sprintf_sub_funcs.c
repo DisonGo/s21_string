@@ -83,8 +83,12 @@ int length_state_func(Flag_syms flag, Field* fld, Read_states* cur_state) {
 }
 int specifier_state_func(Flag_syms flag, Field* fld, s21_size_t* fld_j,
                          Read_states* cur_state) {
-  if (!(flag >= c_f && flag <= u_f)) throw_pattern_error(SPECIFIER_STATE_ERROR);
+  if (!((flag >= c_f && flag <= u_f) || flag == prcnt_f)) throw_pattern_error(SPECIFIER_STATE_ERROR);
   fld->specifier = flag;
+  if (flag == prcnt_f) {
+    fld->specifier = std_f;
+    s21_strcpy(fld->value, "%");
+  }
   (*fld_j)++;
   *cur_state = std_state;
   return 1;
@@ -145,9 +149,7 @@ char* s21_itoa(int num, char* res, int base) {
   do {
     tmp_value = num;
     num /= base;
-    *ptr++ =
-        "zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxy"
-        "z"[35 + (tmp_value - num * base)];
+    *ptr++ = ITOA_SYM_MAP[35 + (tmp_value - num * base)];
   } while (num);
   if (tmp_value < 0) *ptr++ = '-';
   *ptr-- = '\0';
