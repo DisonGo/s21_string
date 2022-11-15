@@ -207,6 +207,18 @@ char* compile_pattern_in_buffer(Field field, char* buffer, va_list args) {
   if (field.specifier == u_f) compile_u_f(buffer, va_arg(args, unsigned int));
   return buffer;
 }
+char* s21_dtoa(double x, char* res, int after_point) {
+  int main_part = (int)x;
+  double mantissa = x - main_part;
+  s21_itoa(main_part, res, 10);
+  res[s21_strlen(res)] = '.';
+  mantissa = mantissa * pow(10, after_point);
+  char* c_mantissa = calloc(64 + 1, sizeof(char));
+  s21_itoa((int)mantissa, c_mantissa, 10);
+  s21_strcat(res, c_mantissa);
+  free(c_mantissa);
+  return res;
+}
 char* s21_itoa(int num, char* res, int base) {
   if (base < 2 || base > 36) {
     *res = '\0';
