@@ -61,7 +61,7 @@ typedef struct _field {
   int specifier;
   int flag;
   int width;
-  int precise;
+  int precision;
   int length;
   char value[VALLUE_BUF_SIZE];
 } Field;

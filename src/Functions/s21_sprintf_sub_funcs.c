@@ -65,7 +65,7 @@ int precise_state_func(Flag_syms* flag, char** buf, Field* fld,
       if (*num_beg == '0' && *(num_beg + 1) != '\0')
         throw_pattern_error(PRECISE_STATE_ERROR " Bad num");
       int precision = atoi(num_beg);
-      fld->precise = precision;
+      fld->precision = precision;
     }
     free(num_beg);
   }
@@ -102,9 +102,9 @@ int compile_d_f(char* buffer, int num, Field fld) {
   return res;
 }
 int compile_i_f(char* buffer, int num, Field fld) {
-  if (!num && !fld.precise) return 1;
+  if (!num && !fld.precision) return 1;
   int str_size = 30;
-  str_size = max(str_size, max(fld.width, fld.precise));
+  str_size = max(str_size, max(fld.width, fld.precision));
   if (fld.flag & (pls_f | blnk_f)) str_size++;
   char* str = calloc(str_size + 1, 1);
   if (!str) return 0;
@@ -117,12 +117,12 @@ int compile_i_f(char* buffer, int num, Field fld) {
   return 1;
 }
 int compile_f_f(char* buffer, double num, Field fld) {
-  if (!num && !fld.precise) return 1;
+  if (!num && !fld.precision) return 1;
   int str_size = 64;
   if (fld.flag & (pls_f | blnk_f)) str_size++;
   char* str = calloc(str_size * 2 + 1, 1);
   if (!str) return 0;
-  s21_dtoa(num, str, fld.precise);
+  s21_dtoa(num, str, fld.precision);
   str_size = max(s21_strlen(str), fld.width);
   str = realloc(str, str_size + 1);
   if (!str) return 0;
@@ -195,15 +195,15 @@ int do_precision_transform(char* src, Field fld, s21_size_t size) {
       buffer++;
       src++;
     }
-    int null_count = fld.precise - s21_strlen(src);
+    int null_count = fld.precision - s21_strlen(src);
     if (null_count <= 0) return 1;
     s21_memset(buffer, '0', null_count);
     s21_strcat(buffer, src);
     s21_strcpy(ptr_beg_src, ptr_beg_buf);
   }
   if (fld.specifier == s_f) {
-    if (!fld.precise) return 1;
-    int str_size = min(size, fld.precise);
+    if (!fld.precision) return 1;
+    int str_size = min(size, fld.precision);
     src[str_size] = '\0';
   }
   return 1;
