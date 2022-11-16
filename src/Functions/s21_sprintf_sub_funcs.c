@@ -1,4 +1,5 @@
 #include <stdio.h>
+
 #include "../s21_sprintf.h"
 s21_size_t count_patterns(Field* fields) {
   s21_size_t count = 0, i;
@@ -66,6 +67,9 @@ int precise_state_func(Flag_syms* flag, char** buf, Field* fld,
         throw_pattern_error(PRECISE_STATE_ERROR " Bad num");
       int precision = atoi(num_beg);
       fld->precision = precision;
+    } else {
+      fld->precision = 0;
+      *flag = flag_map(**buf);
     }
     free(num_beg);
   }
@@ -74,7 +78,19 @@ int precise_state_func(Flag_syms* flag, char** buf, Field* fld,
 }
 int length_state_func(Flag_syms flag, Field* fld, Read_states* cur_state) {
   if (flag >= h_f && flag <= l_f) {
-    fld->length |= flag;
+    if (flag == l_f) {
+      if (fld->length == l_f)
+        fld->length = l_l_f;
+      else if (fld->length == 0)
+        fld->length = l_f;
+      else
+        throw_pattern_error(LENGTH_STATE_ERROR " length syms mixed");
+    }
+    if (flag == h_f) {
+      if (fld->length != 0)
+        throw_pattern_error(LENGTH_STATE_ERROR " length syms mixed");
+      fld->length = h_f;
+    }
     return 1;
   }
   *cur_state = specifier_state;
@@ -82,7 +98,8 @@ int length_state_func(Flag_syms flag, Field* fld, Read_states* cur_state) {
 }
 int specifier_state_func(Flag_syms flag, Field* fld, s21_size_t* fld_j,
                          Read_states* cur_state) {
-  if (!((flag >= c_f && flag <= u_f) || flag == prcnt_f)) throw_pattern_error(SPECIFIER_STATE_ERROR);
+  if (!((flag >= c_f && flag <= u_f) || flag == prcnt_f))
+    throw_pattern_error(SPECIFIER_STATE_ERROR);
   fld->specifier = flag;
   if (flag == prcnt_f) {
     fld->specifier = std_f;
@@ -97,17 +114,17 @@ int compile_c_f(char* buffer, int c) {
   s21_strncat(buffer, str, 1);
   return 1;
 }
-int compile_d_f(char* buffer, int num, Field fld) {
-  int res = compile_i_f(buffer, num, fld);
-  return res;
+int compile_d_f(char* buffer, long long int num, Field fld) {
+  return compile_i_f(buffer, num, fld);
 }
-int compile_i_f(char* buffer, int num, Field fld) {
+int compile_i_f(char* buffer, long long int num, Field fld) {
   if (!num && !fld.precision) return 1;
   int str_size = 30;
   str_size = max(str_size, max(fld.width, fld.precision));
   if (fld.flag & (pls_f | blnk_f)) str_size++;
   char* str = calloc(str_size + 1, 1);
   if (!str) return 0;
+  if (fld.precision == -1) fld.precision = 1;
   s21_itoa(num, str, 10);
   do_precision_transform(str, fld, str_size);
   do_flag_transform(str, fld, (num >= 0), str_size);
@@ -122,6 +139,7 @@ int compile_f_f(char* buffer, double num, Field fld) {
   if (fld.flag & (pls_f | blnk_f)) str_size++;
   char* str = calloc(str_size * 2 + 1, 1);
   if (!str) return 0;
+  if (fld.precision == -1) fld.precision = 6;
   s21_dtoa(num, str, fld.precision);
   str_size = max(s21_strlen(str), fld.width);
   str = realloc(str, str_size + 1);
@@ -147,12 +165,8 @@ int compile_s_f(char* buffer, const char* str, Field fld) {
   free(new_str);
   return 1;
 }
-int compile_u_f(char* buffer, unsigned int num) {
-  char* str = calloc(30, 1);
-  if (!str) return 0;
-  s21_strcat(buffer, s21_itoa((int)num, str, 10));
-  free(str);
-  return 1;
+int compile_u_f(char* buffer, long long unsigned int num, Field fld) {
+  return compile_i_f(buffer, num, fld);
 }
 int do_flag_transform(char* src, Field fld, int sign, s21_size_t size) {
   if (!fld.flag || !sign) return 1;
@@ -175,14 +189,12 @@ int do_width_transform(char* src, Field fld, s21_size_t size) {
     if (!(fld.flag & mns_f)) {
       s21_strcat(buffer, src);
       s21_strcpy(src, buffer);
-    }
-    else {
+    } else {
       s21_strcat(src, buffer);
     }
     free(buffer);
   }
   return 1;
-  
 }
 int do_precision_transform(char* src, Field fld, s21_size_t size) {
   if (fld.specifier >= d_f && fld.specifier <= i_f) {
@@ -209,44 +221,54 @@ int do_precision_transform(char* src, Field fld, s21_size_t size) {
   return 1;
 }
 char* compile_pattern_in_buffer(Field field, char* buffer, va_list args) {
-  if (field.specifier == c_f) compile_c_f(buffer, va_arg(args, int));
-  if (field.specifier == d_f) compile_d_f(buffer, va_arg(args, int), field);
-  if (field.specifier == i_f) compile_i_f(buffer, va_arg(args, int), field);
-  if (field.specifier == f_f) compile_f_f(buffer, va_arg(args, double), field);
-  if (field.specifier == s_f) compile_s_f(buffer, va_arg(args, char*), field);
-  if (field.specifier == u_f) compile_u_f(buffer, va_arg(args, unsigned int));
+  int spec = field.specifier;
+  if (spec == c_f) compile_c_f(buffer, va_arg(args, int));
+  if (spec == f_f) compile_f_f(buffer, va_arg(args, double), field);
+  if (spec == s_f) compile_s_f(buffer, va_arg(args, char*), field);
+  if (spec & (d_f | i_f | u_f)) {
+    int len = field.length;
+    if (len == l_l_f) {
+      if (spec == d_f) compile_d_f(buffer, va_arg(args, long long int), field);
+      if (spec == i_f) compile_i_f(buffer, va_arg(args, long long int), field);
+      if (spec == u_f)
+        compile_u_f(buffer, va_arg(args, long long unsigned int), field);
+    }
+    if (len == l_f) {
+      if (spec == d_f) compile_d_f(buffer, va_arg(args, long int), field);
+      if (spec == i_f) compile_i_f(buffer, va_arg(args, long int), field);
+      if (spec == u_f)
+        compile_u_f(buffer, va_arg(args, long unsigned int), field);
+    }
+    if (len == h_f || len == 0) {
+      if (spec == d_f) compile_d_f(buffer, va_arg(args, int), field);
+      if (spec == i_f) compile_i_f(buffer, va_arg(args, int), field);
+      if (spec == u_f) compile_u_f(buffer, va_arg(args, unsigned int), field);
+    }
+  }
   return buffer;
 }
 char* s21_dtoa(double x, char* res, int after_point) {
   int main_part = (int)x;
   double mantissa = x - main_part;
-  s21_itoa(main_part, res, 10);
-  res[s21_strlen(res)] = '.';
-  mantissa = mantissa * pow(10, after_point);
+  mantissa = mantissa * pow(10, after_point + 1);
   char* c_mantissa = calloc(64 + 1, sizeof(char));
-  mantissaToStr((int)mantissa, c_mantissa, after_point);
+  int round_main_part =
+      mantissaToStr((long long int)mantissa, c_mantissa, after_point);
+  if (round_main_part || (get_first_digit(mantissa) > 4 && !after_point))
+    main_part++;
+  s21_itoa(main_part, res, 10);
+  if (after_point > 0) res[s21_strlen(res)] = '.';
   s21_strcat(res, c_mantissa);
   free(c_mantissa);
   return res;
 }
-int mantissaToStr(int x, char* str, int req_c) {
-  int i = 0;
-  while (x) {
-      str[i++] = (x % 10) + '0';
-      x = x / 10;
-  }
-  while (i < req_c) str[i++] = '0';
-  reverse_str(str);
-  str[i] = '\0';
-  return i;
-}
-char* s21_itoa(int num, char* res, int base) {
+char* s21_itoa(long long int num, char* res, int base) {
   if (base < 2 || base > 36) {
     *res = '\0';
     return res;
   }
   char *ptr = res, *ptr1 = res, tmp_char;
-  int tmp_value;
+  long long int tmp_value;
   do {
     tmp_value = num;
     num /= base;
@@ -261,6 +283,40 @@ char* s21_itoa(int num, char* res, int base) {
   }
   return res;
 }
+int mantissaToStr(long long int x, char* str, int req_c) {
+  int i = 0;
+  int last_num = 0;
+  int last_round = 0;
+  while (x) {
+    int d = (x % 10);
+    last_round = round_if(last_num, i, d, last_round);
+    str[i] = d + (last_round ? 1 : 0) + '0';
+    if (str[i] == ':') str[i] = '0';
+    last_num = d;
+    x = x / 10;
+    i++;
+  }
+  while (i < req_c) str[i++] = '0';
+  i = req_c;
+  reverse_str(str);
+  str[i] = '\0';
+  return last_round;
+}
+/*
+  1. A
+  2. B
+  3. C & D
+  4. E || (C & D)
+  5. (A || (E || (C & D)) & B)
+*/
+int round_if(int last_num, int i, int d, int last_round) {
+  int i_one = (i == 1);                                 // 1
+  int roundble = (last_num > 4);                        // 2
+  int nine_chain = (last_num * d == 81 && last_round);  // 3
+  int last_num_condition =
+      ((last_num == 9 && d != 9 && i - 1 == 1) || nine_chain);  // 4
+  return ((i_one || last_num_condition) && roundble);           // 5
+}
 void reverse_str(char* str) {
   static int i, l, temp;
   l = s21_strlen(str);
@@ -272,6 +328,14 @@ void reverse_str(char* str) {
     reverse_str(str);
   }
 }
+int get_first_digit(long long int num) {
+  int res = num % 10;
+  while (num) {
+    res = num % 10;
+    num /= 10;
+  }
+  return res;
+}
 void throw_pattern_error(const char* error) {
   fprintf(stderr, "Pattern error: %s", error);
   exit(1);
@@ -279,8 +343,8 @@ void throw_pattern_error(const char* error) {
 void resetBuffer(char* str, s21_size_t size) {
   for (s21_size_t i = 0; i < size; i++) str[i] = '\0';
 }
-int max(int a, int b) {return a > b ? a : b;}
-int min(int a, int b) {return a < b ? a : b;}
+int max(int a, int b) { return a > b ? a : b; }
+int min(int a, int b) { return a < b ? a : b; }
 Flag_syms flag_map(int c) {
   Flag_syms flag = 0;
   switch (c) {

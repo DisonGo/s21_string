@@ -6,9 +6,9 @@
 #endif  // OUTPUT_BUF_SIZE
 #ifndef S21_SPRINTF_H_
 #define S21_SPRINTF_H_
+#include <math.h>
 #include <stdarg.h>
 #include <stdlib.h>
-#include <math.h>
 
 #include "s21_string.h"
 #define STD_STATE_ERROR "STD_STATE_ERROR"
@@ -24,7 +24,8 @@
   "9876543210123456789"        \
   "abcdefghijklmnopqrstuvwxyz"
 #define MAX_ARGS 100
-
+#define FIELD_INTIALIZER \
+  { 0, 0, 0, -1, 0, 0 }
 // Pattern symbols bitmask enum
 
 typedef enum _flag_syms {
@@ -41,7 +42,8 @@ typedef enum _flag_syms {
   dot_f = 1 << 10,
   h_f = 1 << 11,
   l_f = 1 << 12,
-  prcnt_f = 1 << 13,
+  l_l_f = 1 << 13,
+  prcnt_f = 1 << 14,
 } Flag_syms;
 
 // Pattern parser read states bitmask enum
@@ -84,11 +86,11 @@ int specifier_state_func(Flag_syms flag, Field* fld, s21_size_t* fld_j,
 
 char* compile_pattern_in_buffer(Field field, char* buffer, va_list args);
 int compile_c_f(char* buffer, int c);
-int compile_d_f(char* buffer, int num, Field fld);
-int compile_i_f(char* buffer, int num, Field fld);
+int compile_d_f(char* buffer, long long int num, Field fld);
+int compile_i_f(char* buffer, long long int num, Field fld);
 int compile_f_f(char* buffer, double num, Field fld);
 int compile_s_f(char* buffer, const char* str, Field fld);
-int compile_u_f(char* buffer, unsigned int num);
+int compile_u_f(char* buffer, long long unsigned int num, Field fld);
 
 // Pattern value transform functions
 
@@ -98,14 +100,17 @@ int do_precision_transform(char* src, Field fld, s21_size_t size);
 
 // Utility functions
 
-char* s21_itoa(int num, char* res, int base);
+char* s21_itoa(long long int num, char* res, int base);
 char* s21_dtoa(double x, char* res, int after_point);
-int mantissaToStr(int x, char* str, int req_c);
+int mantissaToStr(long long int x, char* str, int req_c);
 void reverse_str(char* str);
 void throw_pattern_error(const char* error);
 void resetBuffer(char* str, s21_size_t size);
+void init_fields(Field* fields, s21_size_t size);
 int max(int a, int b);
 int min(int a, int b);
+int get_first_digit(long long int num);
+int round_if(int last_num, int i, int d, int last_round);
 s21_size_t count_patterns(Field* fields);
 Flag_syms flag_map(int c);
 #endif  // S21_SPRINTF_H_

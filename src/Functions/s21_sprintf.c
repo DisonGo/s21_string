@@ -2,6 +2,7 @@
 int s21_sprintf(char* str, const char* format, ...) {
   if (!str) return -1;
   Field fields[MAX_ARGS] = {0};
+  init_fields(fields, MAX_ARGS);
   read_fields(fields, format);
   char output[OUTPUT_BUF_SIZE] = {'\0'};
   va_list args;
@@ -40,4 +41,15 @@ Field* read_fields(Field* fields, const char* pattern) {
       specifier_state_func(flag, &fields[j], &j, &cur_state);
   }
   return fields;
+}
+void init_fields(Field* fields, s21_size_t size) {
+  if (!fields || !size) return;
+  for (s21_size_t i = 0; i < size; i++) {
+    fields[i].specifier = 0;
+    fields[i].flag = 0;
+    fields[i].width = 0;
+    fields[i].precision = -1;
+    fields[i].length = 0;
+    resetBuffer(fields[i].value, VALLUE_BUF_SIZE);
+  }
 }
