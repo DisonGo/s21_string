@@ -1,4 +1,14 @@
 #include "../s21_string.h"
+/**
+ * @brief Lexographicly compare two strings.
+ * 
+ * @param[in] str1 First string. 
+ * @param[in] str2 Second string.
+ * @return Lexographical difference in strings.
+ * @retval int == 0 - strings are the same
+ * @retval int > 0 - str1 is bigger then str2
+ * @retval int < 0 - str2 is bigger then str1
+ */
 int s21_strcmp(const char *str1, const char *str2) {
   int result = 0;
   s21_size_t str_length =

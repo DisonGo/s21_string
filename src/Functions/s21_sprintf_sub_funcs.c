@@ -135,7 +135,7 @@ int compile_i_f(char* buffer, long long int num, Field fld) {
 }
 int compile_f_f(char* buffer, double num, Field fld) {
   if (!num && !fld.precision) return 1;
-  int str_size = 64;
+  int str_size = 1 << 7;
   if (fld.flag & (pls_f | blnk_f)) str_size++;
   char* str = calloc(str_size * 2 + 1, 1);
   if (!str) return 0;
@@ -303,19 +303,20 @@ int mantissaToStr(long long int x, char* str, int req_c) {
   return last_round;
 }
 /*
-  1. A
-  2. B
-  3. C & D
-  4. E || (C & D)
-  5. (A || (E || (C & D)) & B)
+ A: i == 1
+ B: Last num == new num == 9
+ C: Last number was rounded
+ D: If last num == 9 and new num != 9 and it is second itteration
+ E: Last num roundble
+ Result: (A || D || (B & C)) & E
 */
 int round_if(int last_num, int i, int d, int last_round) {
-  int i_one = (i == 1);                                 // 1
-  int roundble = (last_num > 4);                        // 2
-  int nine_chain = (last_num * d == 81 && last_round);  // 3
-  int last_num_condition =
-      ((last_num == 9 && d != 9 && i - 1 == 1) || nine_chain);  // 4
-  return ((i_one || last_num_condition) && roundble);           // 5
+  int A = (i == 1);
+  int B = (last_num * d == 81);
+  int C = (last_round);
+  int D = (last_num == 9 && d != 9 && i - 1 == 1);
+  int E = (last_num > 4);
+  return ((A || D || (B & C)) & E);
 }
 void reverse_str(char* str) {
   static int i, l, temp;

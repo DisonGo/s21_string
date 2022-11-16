@@ -1,6 +1,14 @@
-#include <stdlib.h>
-
 #include "../s21_string.h"
+#include <stdlib.h>
+/**
+ * @brief Returns a new string in which all beginning and end occurrences of a set of given characters (trim_chars) from the given string (src) are removed.
+ * 
+ * @param src Source string.
+ * @param trim_chars Array of trimming chars.
+ * @return Void pointer to new string.
+ * @retval void* - new string
+ * @retval S21_NULL - function failed
+ */
 void* s21_trim(const char* src, const char* trim_chars) {
   s21_size_t src_len = s21_strlen(src);
   char* buf = calloc(src_len + 1, sizeof(char));

@@ -1,6 +1,13 @@
-#include <stdio.h>
-
 #include "../s21_string.h"
+/**
+ * @brief Find first occurrence of full match of needle in haystack (excluding '\0').
+ * 
+ * @param[in] haystack Search string.
+ * @param[in] needle Substring to find.
+ * @return Char pointer to found substring.
+ * @retval char* - substring was found
+ * @retval S21_NULL - substring not found
+ */
 char* s21_strstr(const char* haystack, const char* needle) {
   char* res = S21_NULL;
   char* hay = (char*)haystack;

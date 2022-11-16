@@ -1,5 +1,12 @@
 #include "../s21_str_error.h"
 #include "../s21_string.h"
+/**
+ * @brief Searches the internal array for error number errnum and returns a pointer to the string with the error message.
+ * 
+ * @param[in] errnum Index in errors array.
+ * @return Pointer to the string with the error message.
+ * @retval char* - error message
+ */
 char *s21_strerror(int errnum) {
 #ifdef __APPLE__
   char errlist[107][50] = {

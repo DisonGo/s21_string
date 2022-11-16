@@ -7,6 +7,15 @@ static void reset_globals() {
   last = S21_NULL;
   delim_ptr = S21_NULL;
 }
+/**
+ * @brief Break string str in substrings using array of delimeters delim.
+ * 
+ * @param[in] str String to break.
+ * @param[in] delim Array of delimeters.
+ * @return Char pointer to substring.
+ * @retval char* - substring was found
+ * @retval S21_NULL - substring not found
+ */
 char* s21_strtok(char* str, const char* delim) {
   if (!str && !base) return S21_NULL;
   if (str) base = str;

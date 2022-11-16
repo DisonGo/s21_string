@@ -1,4 +1,12 @@
 #include "../s21_string.h"
+/**
+ * @brief Calculate length of begging part of str1, which is fully made from chars included in str2.
+ * 
+ * @param[in] str1 Search string.
+ * @param[in] str2 Array of included chars.
+ * @return Size of found part.
+ * @retval s21_size_t
+ */
 s21_size_t s21_strspn(const char* str1, const char* str2) {
   int do_loop = 1;
   const char* str1_def = str1;

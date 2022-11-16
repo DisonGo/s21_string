@@ -1,4 +1,13 @@
 #include "../s21_sprintf.h"
+/**
+ * @brief Sending formated output in str.
+ * 
+ * @param[out] str Output string.
+ * @param[in] format Format string.
+ * @param[in] ... Arguments for format string.
+ * @return Int number of chars inserted in str.
+ * @retval int 
+ */
 int s21_sprintf(char* str, const char* format, ...) {
   if (!str) return -1;
   Field fields[MAX_ARGS] = {0};
