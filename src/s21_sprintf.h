@@ -27,7 +27,6 @@
 #define FIELD_INTIALIZER \
   { 0, 0, 0, -1, 0, 0 }
 // Pattern symbols bitmask enum
-
 typedef enum _flag_syms {
   std_f = 1 << 0,
   c_f = 1 << 1,
@@ -76,7 +75,7 @@ int std_state_func(Flag_syms flag, char* buf, char* value_buf, Field* fld,
 int flag_state_func(Flag_syms flag, Field* fld, Read_states* cur_state);
 int width_state_func(Flag_syms* flag, char** buf, Field* fld,
                      Read_states* cur_state);
-int precise_state_func(Flag_syms* flag, char** buf, Field* fld,
+int precision_state_func(Flag_syms* flag, char** buf, Field* fld,
                        Read_states* cur_state);
 int length_state_func(Flag_syms flag, Field* fld, Read_states* cur_state);
 int specifier_state_func(Flag_syms flag, Field* fld, s21_size_t* fld_j,

@@ -27,7 +27,14 @@ int s21_sprintf(char* str, const char* format, ...) {
   int res = s21_strlen(str);
   return res;
 }
-
+/**
+ * @brief Parse pattern string to Field array.
+ * 
+ * @param fields Pointer to Field array.
+ * @param pattern Pattern string.
+ * @return Pointer to filled Field array.
+ * @retval Field*
+ */
 Field* read_fields(Field* fields, const char* pattern) {
   char* buf = calloc(s21_strlen(pattern) + 1, sizeof(char));
   if (!buf) return S21_NULL;
@@ -43,14 +50,20 @@ Field* read_fields(Field* fields, const char* pattern) {
     if (cur_state == width_state)
       width_state_func(&flag, &buf, &fields[j], &cur_state);
     if (cur_state == precise_state)
-      precise_state_func(&flag, &buf, &fields[j], &cur_state);
+      precision_state_func(&flag, &buf, &fields[j], &cur_state);
     if (cur_state == length_state)
-      if (length_state_func(flag, &fields[j], &cur_state)) continue;
+      if (!length_state_func(flag, &fields[j], &cur_state)) continue;
     if (cur_state == specifier_state)
       specifier_state_func(flag, &fields[j], &j, &cur_state);
   }
   return fields;
 }
+/**
+ * @brief Initialize function for patter array.
+ * 
+ * @param fields Pattern array.
+ * @param size Size of pattern array.
+ */
 void init_fields(Field* fields, s21_size_t size) {
   if (!fields || !size) return;
   for (s21_size_t i = 0; i < size; i++) {
