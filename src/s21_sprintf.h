@@ -4,6 +4,9 @@
 #ifndef OUTPUT_BUF_SIZE
 #define OUTPUT_BUF_SIZE 1 << 12
 #endif  // OUTPUT_BUF_SIZE
+#ifndef WCHAR_BUF_SIZE
+#define WCHAR_BUF_SIZE 1 << 12
+#endif  // OUTPUT_BUF_SIZE
 #ifndef S21_SPRINTF_H_
 #define S21_SPRINTF_H_
 #include <math.h>
@@ -76,7 +79,7 @@ int flag_state_func(Flag_syms flag, Field* fld, Read_states* cur_state);
 int width_state_func(Flag_syms* flag, char** buf, Field* fld,
                      Read_states* cur_state);
 int precision_state_func(Flag_syms* flag, char** buf, Field* fld,
-                       Read_states* cur_state);
+                         Read_states* cur_state);
 int length_state_func(Flag_syms flag, Field* fld, Read_states* cur_state);
 int specifier_state_func(Flag_syms flag, Field* fld, s21_size_t* fld_j,
                          Read_states* cur_state);
@@ -85,11 +88,11 @@ int specifier_state_func(Flag_syms flag, Field* fld, s21_size_t* fld_j,
 
 char* compile_pattern_in_buffer(Field field, char* buffer, va_list args);
 int compile_c_f(char* buffer, int c);
-int compile_d_f(char* buffer, long long int num, Field fld);
-int compile_i_f(char* buffer, long long int num, Field fld);
+int compile_d_f(char* buffer, long long num, Field fld);
+int compile_i_f(char* buffer, long long num, Field fld);
 int compile_f_f(char* buffer, double num, Field fld);
 int compile_s_f(char* buffer, const char* str, Field fld);
-int compile_u_f(char* buffer, long long unsigned int num, Field fld);
+int compile_u_f(char* buffer, long long unsigned num, Field fld);
 
 // Pattern value transform functions
 
@@ -99,16 +102,17 @@ int do_precision_transform(char* src, Field fld, s21_size_t size);
 
 // Utility functions
 
-char* s21_itoa(long long int num, char* res, int base);
+char* s21_itoa(long long num, char* res, int base);
+char* s21_uitoa(long long unsigned num, char* res, int base);
 char* s21_dtoa(double x, char* res, int after_point);
-int mantissaToStr(long long int x, char* str, int req_c);
+int mantissaToStr(unsigned long long x, char* str, int req_c);
 void reverse_str(char* str);
 void throw_pattern_error(const char* error);
 void resetBuffer(char* str, s21_size_t size);
 void init_fields(Field* fields, s21_size_t size);
 int max(int a, int b);
 int min(int a, int b);
-int get_first_digit(long long int num);
+int get_first_digit(long long num);
 int round_if(int last_num, int i, int d, int last_round);
 s21_size_t count_patterns(Field* fields);
 Flag_syms flag_map(int c);

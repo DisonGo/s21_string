@@ -1,8 +1,10 @@
-#include "../s21_string.h"
 #include <stdlib.h>
+
+#include "../s21_string.h"
 /**
- * @brief Returns a new string in which all beginning and end occurrences of a set of given characters (trim_chars) from the given string (src) are removed.
- * 
+ * @brief Returns a new string in which all beginning and end occurrences of a
+ * set of given characters (trim_chars) from the given string (src) are removed.
+ *
  * @param src Source string.
  * @param trim_chars Array of trimming chars.
  * @return Void pointer to new string.

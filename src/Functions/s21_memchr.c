@@ -1,7 +1,7 @@
 #include "../s21_string.h"
 /**
  * @brief Find first occurrence of char (unsigned) in first n bytes of string.
- * 
+ *
  * @param[in] str Search string.
  * @param[in] c Char to search.
  * @param[in] n Number of bytes.

@@ -1,7 +1,7 @@
 #include "../s21_string.h"
 /**
  * @brief Copy chars from src to dest.
- * 
+ *
  * @param[in] dest Copy destination.
  * @param[in] src Source of copy.
  * @return Char pointer to begining of destination.

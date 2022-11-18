@@ -1,5 +1,5 @@
 SHELL := /bin/bash
-
+# TODO Compile project as static liblary
 DIRS		= ./Functions
 SOURCES 	:= main.c
 # SOURCES		+= $(shell find $(DIRS) -name '*.h')

@@ -1,7 +1,7 @@
 #include "../s21_string.h"
 /**
  * @brief Find first occurrence of char in str.
- * 
+ *
  * @param[in] str Search string.
  * @param[in] c Char to find.
  * @return Pointer to first occurrence of char.

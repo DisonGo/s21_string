@@ -1,7 +1,7 @@
 #include "../s21_string.h"
 /**
  * @brief Copy char (unsigned) to first n bytes of str.
- * 
+ *
  * @param[in] str Where to copy.
  * @param[in] c Char to copy.
  * @param[in] n Number of bytes for replacement.

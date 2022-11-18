@@ -1,7 +1,7 @@
 #include "../s21_string.h"
 /**
  * @brief Lexographicly compare first n bytes in strings.
- * 
+ *
  * @param[in] str1 First string.
  * @param[in] str2 Second string.
  * @param[in] n Number of bytes.

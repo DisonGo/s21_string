@@ -27,13 +27,13 @@ void printFields(Field* arr, s21_size_t size) {
 int main() {
   Field fields[100] = {0};
   init_fields(fields, MAX_ARGS);
-  const char* input_pattern = "% 6f";
-  float test = 123.999567;
+  const char* input_pattern = "This if my '%llu' sprintf";
+  unsigned long long int test = UINT64_MAX;
   char* str = calloc(100, 1);
   s21_sprintf(str, input_pattern, test);
   read_fields(fields, input_pattern);
   printFields(fields, 100);
-  printf("Input string:%s\n", input_pattern);
+  printf("Input string:'%s'\n", input_pattern);
   printf("Output:'%s'\n", str);
   printf("Printf:'");
   printf(input_pattern, test);

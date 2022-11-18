@@ -9,7 +9,7 @@ static void reset_globals() {
 }
 /**
  * @brief Break string str in substrings using array of delimeters delim.
- * 
+ *
  * @param[in] str String to break.
  * @param[in] delim Array of delimeters.
  * @return Char pointer to substring.

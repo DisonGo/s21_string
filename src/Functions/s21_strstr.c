@@ -1,7 +1,8 @@
 #include "../s21_string.h"
 /**
- * @brief Find first occurrence of full match of needle in haystack (excluding '\0').
- * 
+ * @brief Find first occurrence of full match of needle in haystack (excluding
+ * '\0').
+ *
  * @param[in] haystack Search string.
  * @param[in] needle Substring to find.
  * @return Char pointer to found substring.

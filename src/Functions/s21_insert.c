@@ -1,8 +1,10 @@
-#include "../s21_string.h"
 #include <stdlib.h>
+
+#include "../s21_string.h"
 /**
- * @brief Insert substring in string at certain position and return a new string.
- * 
+ * @brief Insert substring in string at certain position and return a new
+ * string.
+ *
  * @param[in] src String where substring will be inserted.
  * @param[in] str Substring to insert.
  * @param[in] start_index Index of inserting in source string.

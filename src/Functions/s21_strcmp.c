@@ -1,8 +1,8 @@
 #include "../s21_string.h"
 /**
  * @brief Lexographicly compare two strings.
- * 
- * @param[in] str1 First string. 
+ *
+ * @param[in] str1 First string.
  * @param[in] str2 Second string.
  * @return Lexographical difference in strings.
  * @retval int == 0 - strings are the same

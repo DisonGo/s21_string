@@ -1,8 +1,9 @@
-#include "../s21_string.h"
 #include <stdlib.h>
+
+#include "../s21_string.h"
 /**
  * @brief Create copy of str transformed into higher register.
- * 
+ *
  * @param[in] str String to copy.
  * @return Void pointer to copied string.
  * @retval void* - copied string

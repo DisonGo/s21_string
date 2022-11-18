@@ -1,7 +1,7 @@
 #include "../s21_string.h"
 /**
  * @brief Copy first n chars from src to dest. More secure then s21_memcpy.
- * 
+ *
  * @param[in] dest Copy destination.
  * @param[in] src Source of copy.
  * @param[in] n Number of bytes to copy.

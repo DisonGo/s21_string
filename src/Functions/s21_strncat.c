@@ -1,10 +1,10 @@
 #include "../s21_string.h"
 /**
- * @brief Concatenation of first N chars to the end of destination string
- * 
- * @param[in] dest Destination
- * @param[in] src Source
- * @param[in] n Number of chars
+ * @brief Concatenation of first N chars to the end of destination string.
+ *
+ * @param[in] dest Destination.
+ * @param[in] src Source.
+ * @param[in] n Number of chars.
  * @return Pointer to begining of dest.
  * @retval char*
  */

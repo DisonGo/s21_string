@@ -1,8 +1,10 @@
 #include <stdio.h>
+
 #include "../s21_string.h"
 /**
- * @brief Calculate length of begging part of str1, which is fully made from chars not included in str2.
- * 
+ * @brief Calculate length of begging part of str1, which is fully made from
+ * chars not included in str2.
+ *
  * @param[in] str1 Search string.
  * @param[in] str2 Array of excluded chars.
  * @return Size of found part.
