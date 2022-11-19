@@ -12,8 +12,12 @@
  */
 int s21_strncmp(const char *str1, const char *str2, s21_size_t n) {
   int result = 0;
+    s21_size_t str_length =
+      s21_strlen(str1) > s21_strlen(str2) ? s21_strlen(str2) : s21_strlen(str1);
   for (s21_size_t i = 0; i < n; i++) {
     if (!result && (str1[i] != str2[i])) result = str1[i] - str2[i];
   }
+  if (!result && s21_strlen(str1) != s21_strlen(str2))
+    result = s21_strlen(str1) > s21_strlen(str2) ? str1[str_length] : -1 * str2[str_length];
   return result;
 }

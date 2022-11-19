@@ -258,15 +258,14 @@ char *s21_strerror(int errnum) {
                            "Memory page has hardware error"};
 #endif  // __linux__
   static char message[128];
-  s21_strcpy(message, errlist[errnum]);
   if ((errnum < 0) || (errnum > ERROR_N)) {
 #ifdef __linux__
-// s21_sprintf(message, "Unknown error %d", errnum);
+s21_sprintf(message, "Unknown error %d", errnum);
 #elif __APPLE__
-// s21_sprintf(message, "Unknown error: %d", errnum);
+s21_sprintf(message, "Unknown error: %d", errnum);
 #endif
   } else {
-    // s21_sprintf(message, "%s", errlist[errnum]);
+    s21_sprintf(message, "%s", errlist[errnum]);
   }
   return message;
 }

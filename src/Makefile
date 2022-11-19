@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 # TODO Compile project as static liblary
 DIRS		= ./Functions
-SOURCES 	:= main.c
+SOURCES 	:= s21_str_test.c
 # SOURCES		+= $(shell find $(DIRS) -name '*.h')
 ODIR 		=./obj
 Flags 		= -Werror -Wall -Wextra -std=c11 -g
@@ -16,7 +16,7 @@ all: clear s21_string
 clear:
 	clear
 clean:
-	rm -rf s21_string *.out $(ODIR)/*.o
+	rm -rf s21_string test *.out $(ODIR)/*.o
 	cd ./Functions; make clean
 obj: $(OBJ)
 	cd ./Functions; make
@@ -27,3 +27,5 @@ clang-replace:
 s21_string: obj
 	$(gcc) $(ODIR)/*.o $(ODIR)/Functions/*.o -o $@
 .PHONY: clean obj clear s21_string
+test: obj
+	$(gcc) -lcheck $(ODIR)/*.o $(ODIR)/Functions/*.o -o $@

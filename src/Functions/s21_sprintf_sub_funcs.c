@@ -176,6 +176,7 @@ int specifier_state_func(Flag_syms flag, Field* fld, s21_size_t* fld_j,
  */
 int compile_c_f(char* buffer, int c) {
   char str[2] = {c};
+  str[1] = '\0';
   s21_strncat(buffer, str, 1);
   return 1;
 }
