@@ -5,22 +5,6 @@
 #include <time.h>
 
 #include "s21_string.h"
-#include "s21_sprintf.h"
-#define CK_FORK "no"
-/*
-
-
-    fail_unless(t_s21_strcpy(str, supp_str) == strcpy(str, supp_str));
-    fail_unless(t_s21_strncpy(str, supp_str, 10) == strncpy(str, supp_str, 10));
-    fail_unless(t_s21_strcspn(str, supp_str) == strcspn(str, supp_str));
-    fail_unless(t_s21_strlen(str) == strlen(str));
-    fail_unless(t_s21_strpbrk(str, supp_str) == strpbrk(str, supp_str));
-    fail_unless(t_s21_strrchr(str, 'h') == strrchr(str, 'h'));
-    fail_unless(t_s21_strspn(str, supp_str) == strspn(str, supp_str));
-    fail_unless(t_s21_strstr(str, supp_str) == strstr(str, supp_str));
-    fail_unless(t_s21_strtok(str, "\n") == strtok(str, "\n"));
-
-*/
 
 START_TEST(t_s21_memchr) {
     char str[1024];
@@ -60,11 +44,9 @@ START_TEST(t_s21_memcpy) {
 }
 END_TEST
 
-// TODO MEMMOVE
 START_TEST(t_s21_memmove) {
     char str[1024];
     char supp_str[256] = "text";
-    
     strcat(str, "Simple text.");
     fail_unless(((char*)s21_memmove(str, supp_str, 10) == (char*)memmove(str, supp_str, 10)));
     fail_unless(((char*)s21_memmove(str, supp_str, 0) == (char*)memmove(str, supp_str, 0)));
@@ -73,7 +55,7 @@ START_TEST(t_s21_memmove) {
     fail_unless(((char*)s21_memmove(str, supp_str, 1) == (char*)memmove(str, supp_str, 1)));
     fail_unless(((char*)s21_memmove(str, supp_str, 7) == (char*)memmove(str, supp_str, 7)));
 }
-// END_TEST
+END_TEST
 
 START_TEST(t_s21_memset) {
     char str[1024];
@@ -95,7 +77,7 @@ START_TEST(t_s21_strcat) {
     char rand_str[5];
     for (int i = 0; i < 30; i++) {
         for (int j = 0; j < 4; j++) {
-            rand_str[j] = (char)rand() % 125 + 2;
+            rand_str[j] = 55;
         }
         strcat(str, rand_str);
         s21_strcat(s21_str, rand_str);
@@ -175,7 +157,7 @@ START_TEST(t_s21_strcpy) {
 
     for (int i = 0; i < 20; i++) {
         for (int j = 0; j < 10; j++) {
-            supp_str[i] = (char)rand() % 127;
+            supp_str[i] = 55;
         }
         fail_unless(!strcmp(s21_strcpy(s21_str, supp_str), strcpy(str, supp_str)));
         memset(supp_str, '\0', 256);
@@ -194,9 +176,9 @@ START_TEST(t_s21_strncpy) {
 
     for (int i = 0; i < 20; i++) {
         for (int j = 0; j < 10; j++) {
-            supp_str[j] = (char)rand() % 96 + 32;
+            supp_str[j] = 101;
         }
-        int rand_value = rand() % 5 + 1;
+        int rand_value = 3;
         s21_strncpy(s21_str, supp_str, (s21_size_t)rand_value);
         strncpy(str, supp_str, (size_t)rand_value);
         memset(supp_str, '\0', 32);
@@ -226,7 +208,7 @@ START_TEST(t_s21_strlen) {
 
     for (int i = 0; i < 20; i++) {
         for (int j = 0; j < 10; j++) {
-            supp_str[i] = (char)rand() % 127;
+            supp_str[i] = 55;
         }
         fail_unless(s21_strlen(supp_str) == strlen(supp_str));
         memset(supp_str, '\0', 256);
@@ -243,7 +225,7 @@ START_TEST(t_s21_strpbrk) {
     srand((unsigned)time(&t));
 
     for (int i = 0; i < 20; i++) {
-        for (int j = 0; j < 10; j++) supp_str[i] = (char)rand() % 127;
+        for (int j = 0; j < 10; j++) supp_str[i] = 55;
         fail_unless(s21_strpbrk(str, supp_str) == strpbrk(str, supp_str));
         memset(supp_str, '\0', 10);
     }
@@ -259,8 +241,8 @@ START_TEST(t_s21_strrchr) {
     srand((unsigned)time(&t));
 
     for (int i = 0; i < 20; i++) {
-        for (int j = 0; j < 10; j++) supp_str[i] = (char)rand() % 127;
-        char rand_value = rand() % 96 + 32;
+        for (int j = 0; j < 10; j++) supp_str[i] = 55;
+        char rand_value = 101;
         fail_unless(s21_strrchr(str, rand_value) == strrchr(str, rand_value));
         memset(supp_str, '\0', 10);
     }
@@ -276,7 +258,7 @@ START_TEST(t_s21_strspn) {
     srand((unsigned)time(&t));
 
     for (int i = 0; i < 20; i++) {
-        for (int j = 0; j < 10; j++) supp_str[i] = (char)rand() % 127;
+        for (int j = 0; j < 10; j++) supp_str[i] = 55;
         fail_unless(s21_strspn(str, supp_str) == strspn(str, supp_str));
         memset(supp_str, '\0', 10);
     }
@@ -293,7 +275,7 @@ START_TEST(t_s21_strstr) {
 
     for (int i = 0; i < 500; i++) {
         for (int j = 0; j < 1; j++) {
-            int rand_value = rand() % 127;
+            int rand_value = 55;
             if (!rand_value) rand_value++;
             supp_str[j] = (char)rand_value;
         }
@@ -305,79 +287,67 @@ END_TEST
 
 START_TEST(t_s21_sprintf) {
     
-
-
-    time_t t;
-    srand((unsigned)time(&t));
-
-
     const char* pattern_0 = "new int is %d";
-    const char* pattern_1 = "new string is %s s";
+    const char* pattern_1 = "new string is %s";
     const char* pattern_2 = "new invisible char is %c";
-    const char* pattern_3 = "new int is %d new string is %s new inv char is %i";
+    const char* pattern_3 = "new inv char is %i";
     const char* pattern_4 = "new special char is %c";
-    
+    const char* pattern_5 = "unsigned value is %u";
+    const char* pattern_6 = "float with dot position %.2f";
+    const char* pattern_7 = "width is %4u";
+    const char* pattern_8 = "percent symbol is %%";
+    const char* pattern_9 = "get sign is %+d";
+
+    char s21_str[256];
+    char str[256];
+
+    s21_sprintf(s21_str, pattern_0, 6);
+    sprintf(str, pattern_0, 6);
+    fail_unless(!strcmp(s21_str, str));
+
+    char tmp[56] = "Hello World!";
+    s21_sprintf(s21_str, pattern_1, tmp);
+    sprintf(str, pattern_1, tmp);
+    fail_unless(!strcmp(s21_str, str));
+    char ch = 'p';
+
+    s21_sprintf(s21_str, pattern_2, ch);
+    sprintf(str, pattern_2, ch);
+    fail_unless(!strcmp(s21_str, str));
+
+    ch = (char)3;
+    s21_sprintf(s21_str, pattern_3, ch);
+    sprintf(str, pattern_3, ch);
+    fail_unless(!strcmp(s21_str, str));
+
+    ch = (char)10;
+    s21_sprintf(s21_str, pattern_4, ch);
+    sprintf(str, pattern_4, ch);
+    fail_unless(!strcmp(s21_str, str));
+
+    unsigned int ui_int = 13456453;
+    s21_sprintf(s21_str, pattern_5, ui_int);
+    sprintf(str, pattern_5, ui_int);
+    fail_unless(!strcmp(s21_str, str));
+
+    float x = 13.123456;
+    s21_sprintf(s21_str, pattern_6, x);
+    sprintf(str, pattern_6, x);
+    fail_unless(!strcmp(s21_str, str));
+
+    s21_sprintf(s21_str, pattern_7, ui_int);
+    sprintf(str, pattern_7, ui_int);
+    fail_unless(!strcmp(s21_str, str));
+
+    ch = '%';
+    s21_sprintf(s21_str, pattern_8, ch);
+    sprintf(str, pattern_8, ch);
+    fail_unless(!strcmp(s21_str, str));
 
 
-
-    for (int i = 0; i < 50; i++) {
-        char str[512] = {0};
-        char s21_str[1 << 12] = {0};
-        char tmp[56] = {0};
-        int n = i % 5;
-        printf("ITERATION IS %d\n", n);
-        if (n == 0) {
-            int rand_value = rand() % 256;
-            sprintf(str, pattern_0, rand_value);
-            s21_sprintf(s21_str, pattern_0, rand_value);
-        }
-        if (n == 1) {
-            for (int j = 0; j < 54; j++) {
-                tmp[j] = (char)(rand() % 26 + 97);
-            }
-            tmp[54] = '\0';
-            sprintf(str, pattern_1, tmp);
-            s21_sprintf(s21_str, pattern_1, tmp);
-        }
-        if (n == 2) {
-            char inv_char = rand() % 31 + 1;
-            sprintf(str, pattern_2, inv_char);
-            s21_sprintf(s21_str, pattern_2, inv_char);
-        }
-        if (n == 3) {
-            int rand_value = rand() % 256;
-            // for (int j = 0; j < 54; j++) {
-            //     tmp[j] = (char)(rand() % 26 + 97);
-            // }
-            char tmp2[56] = "ngfebapuglwjovtnogpqrtlrrgiqlkjkofmrphxxacszelsvqoevfd";
-            char inv_char = (char)(rand() % 30 + 1);
-            printf("%15s:'%s'\n", "str", str);
-            printf("%15s:'%p'\n", "str_ptr", str);
-            printf("%15s:'%s'\n", "s21_str", s21_str);
-            printf("%15s:'%p'\n", "s21_str_ptr", s21_str);
-            printf("%15s:'%s'\n", "tmp2", tmp2);
-            printf("%15s:'%p'\n", "tmp2_ptr", tmp2);
-            printf("%15s:'%i'\n", "inv_char", inv_char);
-            printf("%15s:'%d'\n", "rand", rand_value);
-            sprintf(str, pattern_3, rand_value, tmp2, inv_char);
-            printf("After sprintf\n");
-            s21_sprintf(s21_str, pattern_3, rand_value, tmp2, inv_char);
-            printf("After s21_sprintf\n");
-        }
-        if (n == 4) {
-            char spec_char;
-            spec_char = rand() % 20 + 1;
-            printf("SPEC CHAR IS '%d'\n", spec_char);
-            sprintf(str, pattern_4, spec_char);
-            s21_sprintf(s21_str, pattern_4, spec_char);
-        }
-        if (n == 3) printf("STR:'%s'\nS21_STR:'%s'\n", str, s21_str);
-
-        fail_unless(!strcmp(str, s21_str));
-        resetBuffer(str, 512);
-        resetBuffer(s21_str, 512);
-        resetBuffer(tmp, 56);
-    }
+    s21_sprintf(s21_str, pattern_9, 1234);
+    sprintf(str, pattern_9, 1234);
+    fail_unless(!strcmp(s21_str, str));
 
 }
 END_TEST
@@ -428,7 +398,7 @@ int main(void)
     
     srunner_run_all(suite_runner, CK_NORMAL);
     int failed_count = srunner_ntests_failed(suite_runner);
-    // srunner_free(suite_runner);
+    srunner_free(suite_runner);
     
     if (failed_count != 0) {
         printf("ERROR: FAILED COUNT: %d\n", failed_count);
@@ -436,8 +406,6 @@ int main(void)
     } else {
         printf("INFO: ALL TESTS ARE SUCCESS\n");
     }
-
-
 
     return EXIT_SUCCESS;
 }
