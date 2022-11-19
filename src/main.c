@@ -25,6 +25,14 @@ void printFields(Field* arr, s21_size_t size) {
   }
 }
 int main() {
-  printf("%i\n", (s21_strcmp("hello", ) == 0)) ;
+  const char* pattern_3 = "new int is %d new string is %s new inv char is %i";
+  int val = 90;
+  char c = (char)12; 
+  char tmp2[56] = "ngfebapuglwjovtnogpqrtlrrgiqlkjkofmrphxxacszelsvqoevfd";
+  char output[VALLUE_BUF_SIZE] = {0};
+  s21_sprintf(output, pattern_3, val, tmp2, c);
+  sprintf(output, pattern_3, val, tmp2, c);
+  printf("%s", output);
+  // printf("%i\n", (s21_strcmp("hello", ) == 0)) ;
   return 0;
 }

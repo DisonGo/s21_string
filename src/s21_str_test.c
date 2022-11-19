@@ -6,7 +6,7 @@
 
 #include "s21_string.h"
 #include "s21_sprintf.h"
-
+#define CK_FORK "no"
 /*
 
 
@@ -311,54 +311,68 @@ START_TEST(t_s21_sprintf) {
     srand((unsigned)time(&t));
 
 
-    const char pattern_1[] = "new int is %d";
-    const char pattern_2[] = "new string is %s";
-    const char pattern_3[] = "new invisible char is %c";
-    const char pattern_4[] = "new int is %d new string is %s new inv char is %c";
-    const char pattern_5[] = "new special char is %c";
+    const char* pattern_0 = "new int is %d";
+    const char* pattern_1 = "new string is %s s";
+    const char* pattern_2 = "new invisible char is %c";
+    const char* pattern_3 = "new int is %d new string is %s new inv char is %i";
+    const char* pattern_4 = "new special char is %c";
     
 
 
 
     for (int i = 0; i < 50; i++) {
         char str[512] = {0};
-        char s21_str[512] = {0};
+        char s21_str[1 << 12] = {0};
         char tmp[56] = {0};
         int n = i % 5;
+        printf("ITERATION IS %d\n", n);
         if (n == 0) {
             int rand_value = rand() % 256;
-            sprintf(str, pattern_1, rand_value);
-            s21_sprintf(s21_str, pattern_1, rand_value);
+            sprintf(str, pattern_0, rand_value);
+            s21_sprintf(s21_str, pattern_0, rand_value);
         }
         if (n == 1) {
             for (int j = 0; j < 54; j++) {
                 tmp[j] = (char)(rand() % 26 + 97);
             }
-            sprintf(str, pattern_2, tmp);
-            s21_sprintf(s21_str, pattern_2, tmp);
+            tmp[54] = '\0';
+            sprintf(str, pattern_1, tmp);
+            s21_sprintf(s21_str, pattern_1, tmp);
         }
         if (n == 2) {
             char inv_char = rand() % 31 + 1;
-            sprintf(str, pattern_3, inv_char);
-            s21_sprintf(s21_str, pattern_3, inv_char);
+            sprintf(str, pattern_2, inv_char);
+            s21_sprintf(s21_str, pattern_2, inv_char);
         }
         if (n == 3) {
             int rand_value = rand() % 256;
-            for (int j = 0; j < 54; j++) {
-                tmp[j] = (char)(rand() % 26 + 97);
-            }
-            char inv_char = (char)rand() % 30 + 1;
-            sprintf(str, pattern_4, rand_value, tmp, inv_char);
-            s21_sprintf(s21_str, pattern_4, rand_value, tmp, inv_char);
+            // for (int j = 0; j < 54; j++) {
+            //     tmp[j] = (char)(rand() % 26 + 97);
+            // }
+            char tmp2[56] = "ngfebapuglwjovtnogpqrtlrrgiqlkjkofmrphxxacszelsvqoevfd";
+            char inv_char = (char)(rand() % 30 + 1);
+            printf("%15s:'%s'\n", "str", str);
+            printf("%15s:'%p'\n", "str_ptr", str);
+            printf("%15s:'%s'\n", "s21_str", s21_str);
+            printf("%15s:'%p'\n", "s21_str_ptr", s21_str);
+            printf("%15s:'%s'\n", "tmp2", tmp2);
+            printf("%15s:'%p'\n", "tmp2_ptr", tmp2);
+            printf("%15s:'%i'\n", "inv_char", inv_char);
+            printf("%15s:'%d'\n", "rand", rand_value);
+            sprintf(str, pattern_3, rand_value, tmp2, inv_char);
+            printf("After sprintf\n");
+            s21_sprintf(s21_str, pattern_3, rand_value, tmp2, inv_char);
+            printf("After s21_sprintf\n");
         }
         if (n == 4) {
             char spec_char;
             spec_char = rand() % 20 + 1;
             printf("SPEC CHAR IS '%d'\n", spec_char);
-            sprintf(str, pattern_5, spec_char);
-            s21_sprintf(s21_str, pattern_5, spec_char);
+            sprintf(str, pattern_4, spec_char);
+            s21_sprintf(s21_str, pattern_4, spec_char);
         }
-        printf("ITERATION IS %d\n", n);
+        if (n == 3) printf("STR:'%s'\nS21_STR:'%s'\n", str, s21_str);
+
         fail_unless(!strcmp(str, s21_str));
         resetBuffer(str, 512);
         resetBuffer(s21_str, 512);
@@ -373,7 +387,7 @@ END_TEST
 // Функция создания набора тестов.
 Suite *example_suite_create(void)
 {
-    Suite *suite = suite_create("Example");
+    Suite *suite = suite_create("Tests");
     // Набор разбивается на группы тестов, разделённых по каким-либо критериям.
     TCase *tcase_core = tcase_create("Core of example");
 
@@ -414,7 +428,7 @@ int main(void)
     
     srunner_run_all(suite_runner, CK_NORMAL);
     int failed_count = srunner_ntests_failed(suite_runner);
-    srunner_free(suite_runner);
+    // srunner_free(suite_runner);
     
     if (failed_count != 0) {
         printf("ERROR: FAILED COUNT: %d\n", failed_count);

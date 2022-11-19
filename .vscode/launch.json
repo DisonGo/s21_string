@@ -3,11 +3,20 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug",
-            "program": "${workspaceFolder}/src/s21_string",
+            "name": "Debug main",
+            "program": "${workspaceFolder}/src/main",
             "args": [],
             "cwd": "${workspaceFolder}/src",
             "preLaunchTask": "Build project"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug tests",
+            "program": "${workspaceFolder}/src/test",
+            "args": [],
+            "cwd": "${workspaceFolder}/src",
+            "preLaunchTask": "Build tests"
         }
     
     ]

@@ -10,6 +10,14 @@
                 "cd ${workspaceFolder}/src;",
                 "make"
             ]
+        },
+        {
+            "label": "Build tests",
+            "type": "shell",
+            "command": [
+                "cd ${workspaceFolder}/src;",
+                "make test"
+            ]
         }
     ]
 }
