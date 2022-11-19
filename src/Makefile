@@ -33,6 +33,4 @@ test: s21_string.a $(TEST_O)
 gcov_report: test
 	./test
 	gcov $(ODIR)/s21_str_test.c
-	geninfo "$(ODIR)" -b "./" -o ./s21_string.info
-	genhtml s21_string.info -o temp
 .PHONY: clean obj clear s21_string test clang-replace all
