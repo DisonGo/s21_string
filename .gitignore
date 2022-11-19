@@ -1,4 +1,7 @@
 *.o
+*.gcda
+*.gcno
+*.gcov
 s21_string
+s21_string.a
 test
-Done

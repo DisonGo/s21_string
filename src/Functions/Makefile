@@ -6,7 +6,7 @@ OBJ 		= 	$(patsubst ./%.c,$(ODIR)/%.o, $(SOURCES))
 all: obj
 
 $(ODIR)/%.o: %.c $(INC)
-	$(gcc) -g $< -c -o $@
+	$(gcc) $< -c -o $@
 obj: $(OBJ)
 clean:
 	rm -rf $(ODIR)/*.o

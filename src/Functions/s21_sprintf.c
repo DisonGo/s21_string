@@ -37,6 +37,7 @@ int s21_sprintf(char* str, const char* format, ...) {
  */
 Field* read_fields(Field* fields, const char* pattern) {
   char* buf = calloc(s21_strlen(pattern) + 1, sizeof(char));
+  char* buf_beg = buf;
   if (!buf) return S21_NULL;
   s21_strcpy(buf, pattern);
   char value_buf[VALLUE_BUF_SIZE] = "";
@@ -56,6 +57,7 @@ Field* read_fields(Field* fields, const char* pattern) {
     if (cur_state == specifier_state)
       specifier_state_func(flag, &fields[j], &j, &cur_state);
   }
+  free(buf_beg);
   return fields;
 }
 /**

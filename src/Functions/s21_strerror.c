@@ -260,9 +260,9 @@ char *s21_strerror(int errnum) {
   static char message[128];
   if ((errnum < 0) || (errnum > ERROR_N)) {
 #ifdef __linux__
-s21_sprintf(message, "Unknown error %d", errnum);
+    s21_sprintf(message, "Unknown error %d", errnum);
 #elif __APPLE__
-s21_sprintf(message, "Unknown error: %d", errnum);
+    s21_sprintf(message, "Unknown error: %d", errnum);
 #endif
   } else {
     s21_sprintf(message, "%s", errlist[errnum]);

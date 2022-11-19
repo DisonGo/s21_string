@@ -1,35 +1,38 @@
 SHELL := /bin/bash
-# TODO Compile project as static liblary
+# TODO Make gcov_report target for unit tests reports
 DIRS		= ./Functions
 # SOURCES 	:= s21_str_test.c
-# SOURCES		+= $(shell find $(DIRS) -name '*.h')
+# SOURCES		= $(shell find . -name '*.c')
 ODIR 		=./obj
-Flags 		= -Werror -Wall -Wextra -std=c11 -g
+Flags 		= -Werror -Wall -Wextra -std=c11 -fprofile-arcs -ftest-coverage -fPIC
 gcc 		= gcc $(Flags)
 OS 			:= $(shell uname -s)
 clang_path	= ../../materials/build/scripts/
 INC			:= $(shell find . -name '*.h')
-OBJ 		= 	$(patsubst %.c,$(ODIR)/%.o, $(SOURCES))
+OBJ 		= $(patsubst %.c,$(ODIR)/%.o, $(SOURCES))
+TEST_O		= $(ODIR)/s21_str_test.o
+
 $(ODIR)/%.o: %.c $(INC)
 	$(gcc) $< -c -o $@
-all: clear s21_string
+all: clear clean s21_string.a test
 clear:
 	clear
 clean:
-	rm -rf s21_string test *.out $(ODIR)/*.o
+	rm -rf s21_string.a test *.out $(ODIR)/*.o $(ODIR)/*.gcda $(ODIR)/*.gcno *.gcov
 	cd ./Functions; make clean
 obj: $(OBJ)
 	cd ./Functions; make
 clang:
-	clang-format --style=Google -n *.c *.h ./*/*.c ./*/*.h
+	clang-format --style=Google -n ./*.c ./*.h ./Functions/*.c
 clang-replace:
-	clang-format --style=Google -i *.c *.h ./*/*.c ./*/*.h
-main:
-	rm -rf $(ODIR)/s21_str_test.o
-	make s21_string
-s21_string: obj $(ODIR)/main.o
-	$(gcc) $(ODIR)/*.o $(ODIR)/Functions/*.o -o $@
-.PHONY: clean obj clear s21_string
-test: obj $(ODIR)/s21_str_test.o
-	rm -rf $(ODIR)/main.o
-	$(gcc) -lcheck $(ODIR)/*.o $(ODIR)/Functions/*.o -o $@
+	clang-format --style=Google -i *.c *.h ./Functions/*.c
+s21_string.a: obj
+	ar rcs $@ $(ODIR)/Functions/*.o
+test: s21_string.a $(TEST_O)
+	$(gcc) $^ -o $@ `pkg-config --cflags --libs check`
+gcov_report: test
+	./test
+	gcov $(ODIR)/s21_str_test.c
+	geninfo "$(ODIR)" -b "./" -o ./s21_string.info
+	genhtml s21_string.info -o temp
+.PHONY: clean obj clear s21_string test clang-replace all

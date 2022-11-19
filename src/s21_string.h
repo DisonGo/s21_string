@@ -2,7 +2,6 @@
 #define S21_STRING_H_
 #define S21_NULL ((void *)0)
 typedef unsigned long s21_size_t;
-// TODO Tests for lib via 'check.h'
 // Mem functions
 
 void *s21_memchr(const void *str, int c, s21_size_t n);

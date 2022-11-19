@@ -255,6 +255,7 @@ int compile_f_f(char* buffer, double num, Field fld) {
 int compile_s_f(char* buffer, const char* str, Field fld) {
   if (!str || !buffer || !fld.specifier) return 0;
   int str_size = s21_strlen(str);
+  str_size = str_size > fld.precision ? str_size : fld.precision;
   char* new_str = calloc(str_size + 1, 1);
   if (!new_str) return 0;
   s21_strcpy(new_str, str);
@@ -374,7 +375,7 @@ int do_precision_transform(char* src, Field fld, s21_size_t size) {
     if (!buffer) return 0;
     char* ptr_beg_buf = buffer;
     if (*src == '-') {
-      *buffer = *src;
+      buffer[0] = '-';
       buffer++;
       src++;
     }
@@ -383,11 +384,11 @@ int do_precision_transform(char* src, Field fld, s21_size_t size) {
     s21_memset(buffer, '0', null_count);
     s21_strcat(buffer, src);
     s21_strcpy(ptr_beg_src, ptr_beg_buf);
+    free(ptr_beg_buf);
   }
   if (fld.specifier == s_f) {
     if (!fld.precision) return 1;
-    int str_size = min(size, fld.precision);
-    src[str_size] = '\0';
+    if ((s21_size_t)fld.precision < size) src[fld.precision] = '\0';
   }
   return 1;
 }
