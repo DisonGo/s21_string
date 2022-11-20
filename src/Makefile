@@ -34,6 +34,9 @@ clang-replace:
 	clang-format --style=Google -i *.c *.h ./Functions/*.c
 s21_string.a: obj
 	ar rcs $@ $(ODIR)/Functions/*.o
+set_debug_gcc:
+	$(eval gcc += -g)
+	@echo Debug build
 set_check_gcc:
 	$(eval gcc += -fprofile-arcs -ftest-coverage -fPIC)
 	@echo Check build
