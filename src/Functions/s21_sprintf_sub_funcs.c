@@ -575,15 +575,14 @@ int round_if(int last_num, int i, int d, int last_round) {
  * @param str String to reverse.
  */
 void reverse_str(char* str) {
-  static int i, l, temp;
+  int i, l, temp;  
   l = s21_strlen(str);
-  if (i < l / 2) {
-    temp = str[i];
-    str[i] = str[l - i - 1];
-    str[l - i - 1] = temp;
-    i++;
-    reverse_str(str);
-  }
+  for (i = 0; i < l/2; i++)  
+  {  
+    temp = str[i];  
+    str[i] = str[l - i - 1];  
+    str[l - i - 1] = temp;  
+  } 
 }
 /**
  * @brief Get the first digit of integer number.
