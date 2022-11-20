@@ -352,8 +352,6 @@ START_TEST(t_s21_sprintf) {
   float x1 = 13.99656;
   s21_sprintf(s21_str, pattern_6, x1);
   sprintf(str, pattern_6, x1);
-  printf("1:%s\n", s21_str);
-  printf("2:%s\n", str);
   fail_unless(!strcmp(s21_str, str));
 
   s21_sprintf(s21_str, pattern_7, ui_int);

@@ -1,11 +1,9 @@
-DIRS		= ./Functions
+# TODO Clean ./report && report.info ?
 SOURCES		= $(shell find . -name '*.c')
 REPORTS		= $(shell find . -name '*.gcno') $(shell find . -name '*.gcda')
 ODIR 		=./obj
 Flags 		= -Werror -Wall -Wextra -std=c11
 gcc 		= gcc $(Flags)
-OS 			:= $(shell uname -s)
-clang_path	= ../../materials/build/scripts/
 INC			:= $(shell find . -name '*.h')
 OBJ 		= $(patsubst %.c,$(ODIR)/%.o, $(SOURCES))
 TEST_O		= $(ODIR)/s21_str_test.o
@@ -16,7 +14,10 @@ all: clear clean test
 clear:
 	clear
 clean:
-	rm -rf s21_string.a test *.out $(ODIR)/*.o $(ODIR)/*/*.o $(ODIR)/*.gcno $(ODIR)/*/*.gcda $(ODIR)/*.gcda ./gcov/*.gcno ./gcov/*.gcda  ./gcov/*.gcov
+	rm -rf s21_string.a test *.out
+	rm -rf $(ODIR)/*.o $(ODIR)/*.gcno $(ODIR)/*.gcda
+	rm -rf $(ODIR)/*/*.o $(ODIR)/*/*.gcno $(ODIR)/*/*.gcda
+	rm -rf ./gcov/*.o ./gcov/*.gcno ./gcov/*.gcda
 obj: $(OBJ)
 clang:
 	clang-format --style=Google -n ./*.c ./*.h ./Functions/*.c
@@ -27,12 +28,12 @@ s21_string.a: obj
 set_debug_gcc:
 	$(eval gcc += -g)
 	@echo Debug build
-set_check_gcc:
+set_report_gcc:
 	$(eval gcc += -fprofile-arcs -ftest-coverage -fPIC)
 	@echo Check build
-test: set_check_gcc s21_string.a $(TEST_O)
+test: s21_string.a $(TEST_O)
 	$(gcc) s21_string.a $(TEST_O) -o $@ `pkg-config --cflags --libs check`
-gcov_report: clean test
+gcov_report: clean set_report_gcc test
 	./test
 	gcov *.c ./Functions/*.c -o $(ODIR)/*
 	mv *.gcov ./gcov
@@ -42,4 +43,4 @@ gcov_report: clean test
 	genhtml -o report report.info
 	open ./report/index.html
 
-.PHONY: clean obj clear s21_string test clang-replace all s21_string.a set_debug_gcc set_check_gcc gcov_report
+.PHONY: clean obj clear s21_string test clang-replace all s21_string.a set_debug_gcc set_report_gcc gcov_report
