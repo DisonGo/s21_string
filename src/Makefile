@@ -17,7 +17,6 @@ clear:
 	clear
 clean:
 	rm -rf s21_string.a test *.out $(ODIR)/*.o $(ODIR)/*.gcno $(ODIR)/*.gcda ./gcov/*.gcno ./gcov/*.gcda  ./gcov/*.gcov
-	cd ./Functions; make clean
 obj: $(OBJ)
 clang:
 	clang-format --style=Google -n ./*.c ./*.h ./Functions/*.c
