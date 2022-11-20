@@ -3,8 +3,10 @@
 *.gcno
 *.gcov
 *.html
+*.css
 *.png
 *.info
+_local
 s21_string
 s21_string.a
 test
