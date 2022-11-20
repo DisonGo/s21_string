@@ -16,7 +16,7 @@ all: clear clean test
 clear:
 	clear
 clean:
-	rm -rf s21_string.a test *.out $(ODIR)/*.o $(ODIR)/*.gcno $(ODIR)/*.gcda ./gcov/*.gcno ./gcov/*.gcda  ./gcov/*.gcov
+	rm -rf s21_string.a test *.out $(ODIR)/*.o $(ODIR)/*/*.o $(ODIR)/*.gcno $(ODIR)/*/*.gcda $(ODIR)/*.gcda ./gcov/*.gcno ./gcov/*.gcda  ./gcov/*.gcov
 obj: $(OBJ)
 clang:
 	clang-format --style=Google -n ./*.c ./*.h ./Functions/*.c
@@ -40,5 +40,6 @@ gcov_report: clean test
 	$(brsw)
 	lcov -t ./gcov -o report.info -c -d ./gcov
 	genhtml -o report report.info
+	open ./report/index.html
 
 .PHONY: clean obj clear s21_string test clang-replace all s21_string.a set_debug_gcc set_check_gcc gcov_report
