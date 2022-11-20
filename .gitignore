@@ -2,6 +2,9 @@
 *.gcda
 *.gcno
 *.gcov
+*.html
+*.png
+*.info
 s21_string
 s21_string.a
 test
