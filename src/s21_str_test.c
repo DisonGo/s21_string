@@ -230,7 +230,7 @@ START_TEST(t_s21_strpbrk) {
   char str[1024] = {0};
   char supp_str[10] = {0};
   strcat(str, "Simple text. It's a template for search a chars.");
-
+  fail_unless(s21_strpbrk(str, "ple") == strpbrk(str, "ple"));
   time_t t;
   srand((unsigned)time(&t));
 
@@ -284,7 +284,7 @@ START_TEST(t_s21_strstr) {
 
   time_t t;
   srand((unsigned)time(&t));
-
+  fail_unless(s21_strstr(str, "str") == strstr(str, "str"));
   for (int i = 0; i < 500; i++) {
     for (int j = 0; j < 1; j++) {
       int rand_value = 55;
@@ -308,6 +308,9 @@ START_TEST(t_s21_sprintf) {
   const char* pattern_7 = "width is %4u";
   const char* pattern_8 = "percent symbol is %%";
   const char* pattern_9 = "get sign is %+d";
+  const char* pattern_10 = "new short int is %ld";
+  const char* pattern_11 = "new long int is %-.30ld";
+  const char* pattern_12 = "new long long int is %40lld";
 
   char s21_str[256] = {0};
   char str[256] = {0};
@@ -346,6 +349,13 @@ START_TEST(t_s21_sprintf) {
   sprintf(str, pattern_6, x);
   fail_unless(!strcmp(s21_str, str));
 
+  float x1 = 13.99656;
+  s21_sprintf(s21_str, pattern_6, x1);
+  sprintf(str, pattern_6, x1);
+  printf("1:%s\n", s21_str);
+  printf("2:%s\n", str);
+  fail_unless(!strcmp(s21_str, str));
+
   s21_sprintf(s21_str, pattern_7, ui_int);
   sprintf(str, pattern_7, ui_int);
   fail_unless(!strcmp(s21_str, str));
@@ -357,6 +367,18 @@ START_TEST(t_s21_sprintf) {
 
   s21_sprintf(s21_str, pattern_9, 1234);
   sprintf(str, pattern_9, 1234);
+  fail_unless(!strcmp(s21_str, str));
+
+  s21_sprintf(s21_str, pattern_10, 1234);
+  sprintf(str, pattern_10, 1234);
+  fail_unless(!strcmp(s21_str, str));
+
+  s21_sprintf(s21_str, pattern_11, INT32_MAX);
+  sprintf(str, pattern_11, INT32_MAX);
+  fail_unless(!strcmp(s21_str, str));
+
+  s21_sprintf(s21_str, pattern_12, INT64_MIN);
+  sprintf(str, pattern_12, INT64_MIN);
   fail_unless(!strcmp(s21_str, str));
 }
 END_TEST

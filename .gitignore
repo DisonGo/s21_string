@@ -1,3 +1,7 @@
+.vscode
+launch.json
+task.json
+settings.json
 *.o
 *.gcda
 *.gcno

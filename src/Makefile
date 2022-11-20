@@ -1,9 +1,4 @@
-# SHELL := /bin/bash
-# TODO Make gcov_report target for unit tests reports
-GCOV_PREFIX = ./gcov
-GCOV_PREFIX_STRIP = 1
 DIRS		= ./Functions
-# SOURCES 	:= s21_str_test.c
 SOURCES		= $(shell find . -name '*.c')
 REPORTS		= $(shell find . -name '*.gcno') $(shell find . -name '*.gcda')
 ODIR 		=./obj
@@ -14,20 +9,16 @@ clang_path	= ../../materials/build/scripts/
 INC			:= $(shell find . -name '*.h')
 OBJ 		= $(patsubst %.c,$(ODIR)/%.o, $(SOURCES))
 TEST_O		= $(ODIR)/s21_str_test.o
-# ifeq ($(OS), Darwin)
-# 	brsw = brsw
-# endif
+
 $(ODIR)/%.o: %.c $(INC)
 	$(gcc) $< -c -o $@
-all: clear clean s21_string.a test
+all: clear clean test
 clear:
 	clear
 clean:
 	rm -rf s21_string.a test *.out $(ODIR)/*.o $(ODIR)/*.gcno $(ODIR)/*.gcda ./gcov/*.gcno ./gcov/*.gcda  ./gcov/*.gcov
 	cd ./Functions; make clean
 obj: $(OBJ)
-src:
-	echo $(SOURCES)
 clang:
 	clang-format --style=Google -n ./*.c ./*.h ./Functions/*.c
 clang-replace:
@@ -51,4 +42,4 @@ gcov_report: clean test
 	lcov -t ./gcov -o report.info -c -d ./gcov
 	genhtml -o report report.info
 
-.PHONY: clean obj clear s21_string test clang-replace all
+.PHONY: clean obj clear s21_string test clang-replace all s21_string.a set_debug_gcc set_check_gcc gcov_report
