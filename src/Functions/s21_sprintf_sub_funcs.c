@@ -7,26 +7,27 @@
  * @param[in] flag Flag of symbol of current char in pattern string.
  * @param[in] buf Pointer on current position in pattern string.
  * @param[out] value_buf Buffer string of value.
- * @param[out] fld Array of parsed patterns.
+ * @param[out] pattern Array of parsed patterns.
  * @param[in] fld_j Pointer index of current parsing pattern.
  * @param[out] cur_state Pointer to current read state of parser.
  * @return Bool - if cur_state was switched.
  * @retval int
  */
-int std_state_func(Flag_syms flag, char* buf, char* value_buf, Field* fld,
+int std_state_func(Flag_syms flag, char* buf, char* value_buf, Pattern* pattern,
                    s21_size_t* fld_j, Read_states* cur_state) {
+  int res = 0;
   if (!(flag & prcnt_f)) s21_strncat(value_buf, buf, 1);
   if ((flag & prcnt_f || *(buf + 1) == '\0')) {
     if (value_buf[0] != '\0') {
-      fld->specifier = std_f;
-      s21_strcpy(fld->value, value_buf);
+      pattern->specifier = std_f;
+      s21_strcpy(pattern->value, value_buf);
       resetBuffer(value_buf, VALLUE_BUF_SIZE);
       (*fld_j)++;
     }
     *cur_state = flag_state;
-    return 1;
+    res = 1;
   }
-  return 0;
+  return res;
 }
 /**
  * @brief Pattern parser flag_state read fucntion.
@@ -37,30 +38,31 @@ int std_state_func(Flag_syms flag, char* buf, char* value_buf, Field* fld,
  * @return Bool - if cur_state was switched.
  * @retval int
  */
-int flag_state_func(Flag_syms flag, Field* fld, Read_states* cur_state) {
-  if (flag == mns_f) fld->flag |= mns_f;
+int flag_state_func(Flag_syms flag, Pattern* pattern, Read_states* cur_state) {
+  int *f = &pattern->flag, res = 0;
+  if (flag == mns_f) *f |= mns_f;
   if (flag == pls_f) {
-    if (fld->flag & blnk_f) fld->flag ^= blnk_f;
-    fld->flag |= pls_f;
+    if (*f & blnk_f) *f ^= blnk_f;
+    *f |= pls_f;
   }
-  if (flag == blnk_f && !(fld->flag & pls_f)) fld->flag |= blnk_f;
+  if (flag == blnk_f && !(*f & pls_f)) *f |= blnk_f;
   if (!(flag >= mns_f && flag <= blnk_f)) {
     *cur_state = width_state;
-    return 1;
+    res = 1;
   }
-  return 0;
+  return res;
 }
 /**
  * @brief Pattern parser width_state read fucntion.
  *
  * @param[in] flag Pointer to flag of symbol of current char in pattern string.
  * @param[in] buf Pointer to pointer on current position in pattern string.
- * @param[out] fld Array of parsed patterns.
+ * @param[out] pattern Array of parsed patterns.
  * @param[out] cur_state Pointer to current read state of parser.
  * @return Bool - if cur_state was switched.
  * @retval int
  */
-int width_state_func(Flag_syms* flag, char** buf, Field* fld,
+int width_state_func(Flag_syms* flag, char** buf, Pattern* pattern,
                      Read_states* cur_state) {
   char* num = calloc(16, sizeof(char));
   char* num_beg = num;
@@ -73,7 +75,7 @@ int width_state_func(Flag_syms* flag, char** buf, Field* fld,
     }
     int width = atoi(num_beg);
     if (width == 0) throw_pattern_error(WIDTH_STATE_ERROR " width = 0");
-    fld->width = width;
+    pattern->width = width;
   }
   free(num_beg);
   *cur_state = precise_state;
@@ -84,31 +86,30 @@ int width_state_func(Flag_syms* flag, char** buf, Field* fld,
  *
  * @param[in] flag Pointer to flag of symbol of current char in pattern string.
  * @param[in] buf Pointer to pointer on current position in pattern string.
- * @param[out] fld Array of parsed patterns.
+ * @param[out] pattern Array of parsed patterns.
  * @param[out] cur_state Pointer to current read state of parser.
  * @return Bool - if cur_state was switched.
  * @retval int
  */
-int precision_state_func(Flag_syms* flag, char** buf, Field* fld,
+int precision_state_func(Flag_syms* flag, char** buf, Pattern* pattern,
                          Read_states* cur_state) {
   if (*flag == dot_f) {
     (*buf)++;
     char* num = calloc(16, sizeof(char));
-    char* num_beg = num;
     if (!num) throw_pattern_error(PRECISE_STATE_ERROR " " MEMORY_ERROR);
-    if (s21_strchr(DECIMAL_NUMS, **buf)) {
+    char* num_beg = num;
+    int precision = 0, chr_is_num = s21_strchr(DECIMAL_NUMS, **buf) ? 1 : 0;
+    if (!chr_is_num) *flag = flag_map(**buf);
+    if (chr_is_num) {
       while (**buf != '\0' && (*flag = flag_map(**buf)) == std_f) {
         *num++ = **buf;
         (*buf)++;
       }
       if (*num_beg == '0' && *(num_beg + 1) != '\0')
         throw_pattern_error(PRECISE_STATE_ERROR " Bad num");
-      int precision = atoi(num_beg);
-      fld->precision = precision;
-    } else {
-      fld->precision = 0;
-      *flag = flag_map(**buf);
+      precision = atoi(num_beg);
     }
+    pattern->precision = precision;
     free(num_beg);
   }
   *cur_state = length_state;
@@ -118,49 +119,52 @@ int precision_state_func(Flag_syms* flag, char** buf, Field* fld,
  * @brief Pattern parser length_state read fucntion.
  *
  * @param[in] flag Flag of symbol of current char in pattern string.
- * @param[out] fld Array of parsed patterns.
+ * @param[out] pattern Array of parsed patterns.
  * @param[out] cur_state Pointer to current read state of parser.
  * @return Bool - if cur_state was switched.
  * @retval int
  */
-int length_state_func(Flag_syms flag, Field* fld, Read_states* cur_state) {
+int length_state_func(Flag_syms flag, Pattern* pattern,
+                      Read_states* cur_state) {
+  int l = pattern->length, err = 0, res = 1;
   if (flag >= h_f && flag <= l_f) {
     if (flag == l_f) {
-      if (fld->length == l_f)
-        fld->length = l_l_f;
-      else if (fld->length == 0)
-        fld->length = l_f;
+      if (l == l_f)
+        l = l_l_f;
+      else if (!l)
+        l = l_f;
       else
-        throw_pattern_error(LENGTH_STATE_ERROR " length syms mixed");
+        err = 1;
     }
     if (flag == h_f) {
-      if (fld->length != 0)
-        throw_pattern_error(LENGTH_STATE_ERROR " length syms mixed");
-      fld->length = h_f;
+      if (l) err = 1;
+      l = h_f;
     }
-    return 0;
+    if (err) throw_pattern_error(LENGTH_STATE_ERROR " length syms mixed");
+    res = 0;
   }
-  *cur_state = specifier_state;
-  return 1;
+  pattern->length = l;
+  if (res) *cur_state = specifier_state;
+  return res;
 }
 /**
  * @brief Pattern parser specifier_state read fucntion.
  *
  * @param[in] flag Flag of symbol of current char in pattern string.
- * @param[out] fld Array of parsed patterns.
+ * @param[out] pattern Array of parsed patterns.
  * @param[in] fld_j Pointer to index of current parsing pattern.
  * @param[out] cur_state Pointer to current read state of parser.
  * @return Bool - if cur_state was switched.
  * @retval int
  */
-int specifier_state_func(Flag_syms flag, Field* fld, s21_size_t* fld_j,
+int specifier_state_func(Flag_syms flag, Pattern* pattern, s21_size_t* fld_j,
                          Read_states* cur_state) {
   if (!((flag >= c_f && flag <= u_f) || flag == prcnt_f))
     throw_pattern_error(SPECIFIER_STATE_ERROR);
-  fld->specifier = flag;
+  pattern->specifier = flag;
   if (flag == prcnt_f) {
-    fld->specifier = std_f;
-    s21_strcpy(fld->value, "%");
+    pattern->specifier = std_f;
+    s21_strcpy(pattern->value, "%");
   }
   (*fld_j)++;
   *cur_state = std_state;
@@ -171,99 +175,87 @@ int specifier_state_func(Flag_syms flag, Field* fld, s21_size_t* fld_j,
  *
  * @param[out] buffer Output string.
  * @param[in] c Char to compile.
- * @return Function success.
- * @retval int
  */
-int compile_c_f(char* buffer, int c) {
+void compile_c_f(char* buffer, int c) {
   char str[2] = {c};
   str[1] = '\0';
   s21_strncat(buffer, str, 1);
-  return 1;
 }
 /**
  * @brief Compiler of decimal specifier for Linker.
  *
  * @param buffer Output string.
  * @param num Nummber to compile.
- * @param fld Pattern config.
- * @return Function success.
- * @retval int
+ * @param pattern Pattern config.
  */
-int compile_d_f(char* buffer, long long int num, Field fld) {
-  return compile_i_f(buffer, num, fld);
+void compile_d_f(char* buffer, long long num, Pattern pattern) {
+  compile_i_f(buffer, num, pattern);
 }
 /**
  * @brief Compiler of integer specifier for Linker.
  *
  * @param buffer Output string.
  * @param num Nummber to compile.
- * @param fld Pattern config.
- * @return Function success.
- * @retval int
+ * @param pattern Pattern config.
  */
-int compile_i_f(char* buffer, long long int num, Field fld) {
-  if (!num && !fld.precision) return 1;
-  int str_size = 30;
-  str_size = max(str_size, max(fld.width, fld.precision));
-  if (fld.flag & (pls_f | blnk_f)) str_size++;
+void compile_i_f(char* buffer, long long num, Pattern pattern) {
+  if (!num && !pattern.precision) return;
+  int str_size = max(128, max(pattern.width, pattern.precision));
+  if (pattern.flag & (pls_f | blnk_f)) str_size++;
   char* str = calloc(str_size + 1, 1);
-  if (!str) return 0;
-  if (fld.precision == -1) fld.precision = 1;
+  if (!str) return;
+  if (pattern.precision == -1) pattern.precision = 1;
   s21_itoa(num, str, 10);
-  do_precision_transform(str, fld, str_size);
-  do_flag_transform(str, fld, (num >= 0), str_size);
-  do_width_transform(str, fld, str_size);
+  do_precision_transform(str, pattern, str_size);
+  do_flag_transform(str, pattern, (num >= 0), str_size);
+  do_width_transform(str, pattern, str_size);
   s21_strcat(buffer, str);
   free(str);
-  return 1;
 }
 /**
  * @brief Compiler of double specifier for Linker.
  *
  * @param buffer Output string.
  * @param num Number to compile.
- * @param fld Pattern config.
- * @return Function success.
- * @retval int
+ * @param pattern Pattern config.
  */
-int compile_f_f(char* buffer, double num, Field fld) {
-  if (!num && !fld.precision) return 1;
+void compile_f_f(char* buffer, double num, Pattern pattern) {
+  if (!num && !pattern.precision) return;
   int str_size = 1 << 7;
-  if (fld.flag & (pls_f | blnk_f)) str_size++;
+  if (pattern.flag & (pls_f | blnk_f)) str_size++;
   char* str = calloc(str_size * 2 + 1, 1);
-  if (!str) return 0;
-  if (fld.precision == -1) fld.precision = 6;
-  s21_dtoa(num, str, fld.precision);
-  str_size = max(s21_strlen(str), fld.width);
+  if (!str) return;
+  if (pattern.precision == -1) pattern.precision = 6;
+  s21_dtoa(num, str, pattern.precision);
+  str_size = max(s21_strlen(str), pattern.width);
   str = realloc(str, str_size + 1);
-  if (!str) return 0;
-  do_flag_transform(str, fld, (num >= 0), str_size);
-  do_width_transform(str, fld, str_size);
+  if (!str) return;
+  do_flag_transform(str, pattern, (num >= 0), str_size);
+  do_width_transform(str, pattern, str_size);
   s21_strcat(buffer, str);
   free(str);
-  return 1;
 }
 /**
  * @brief Compiler of string specifier for Linker.
  *
  * @param buffer Output string.
  * @param str String to compile.
- * @param fld Pattern config.
+ * @param pattern Pattern config.
  * @return Function success.
  * @retval int
  */
-int compile_s_f(char* buffer, const char* str, Field fld) {
-  if (!str || !buffer || !fld.specifier) return 0;
+int compile_s_f(char* buffer, const char* str, Pattern pattern) {
+  if (!str || !buffer || !pattern.specifier) return 0;
   int str_size = s21_strlen(str);
-  str_size = str_size > fld.precision ? str_size : fld.precision;
+  str_size = max(str_size, pattern.precision);
   char* new_str = calloc(str_size + 1, 1);
   if (!new_str) return 0;
   s21_strcpy(new_str, str);
-  do_precision_transform(new_str, fld, s21_strlen(str));
-  str_size = max(s21_strlen(new_str), fld.width);
+  do_precision_transform(new_str, pattern, s21_strlen(str));
+  str_size = max(s21_strlen(new_str), pattern.width);
   new_str = realloc(new_str, str_size + 1);
   if (!new_str) return 0;
-  do_width_transform(new_str, fld, str_size);
+  do_width_transform(new_str, pattern, str_size);
   s21_strcat(buffer, new_str);
   free(new_str);
   return 1;
@@ -273,83 +265,72 @@ int compile_s_f(char* buffer, const char* str, Field fld) {
  *
  * @param buffer Output string.
  * @param str Wide string to compile.
- * @param fld Pattern config.
- * @return Function success.
- * @retval int
+ * @param pattern Pattern config.
  */
-int compile_ws_f(char* buffer, wchar_t* str, Field fld) {
-  if (!str || !buffer || !fld.specifier) return 0;
+void compile_ws_f(char* buffer, wchar_t* str, Pattern pattern) {
+  if (!str || !buffer || !pattern.specifier) return;
   char new_str[WCHAR_BUF_SIZE] = {0};
   wcstombs(new_str, str, WCHAR_BUF_SIZE);
   s21_size_t w_len = s21_strlen(new_str);
-  do_precision_transform(new_str, fld, w_len);
-  do_width_transform(new_str, fld, w_len);
+  do_precision_transform(new_str, pattern, w_len);
+  do_width_transform(new_str, pattern, w_len);
   s21_strcat(buffer, new_str);
-  return 1;
 }
 /**
  * @brief Compiler of unsigned integer specifier for Linker.
  *
  * @param buffer Output string.
  * @param num Number to compile.
- * @param fld Pattern config.
- * @return Function success.
- * @retval int
+ * @param pattern Pattern config.
  */
-int compile_u_f(char* buffer, long long unsigned num, Field fld) {
-  if (!num && !fld.precision) return 1;
+void compile_u_f(char* buffer, long long unsigned num, Pattern pattern) {
+  if (!num && !pattern.precision) return;
   int str_size = 30;
-  str_size = max(str_size, max(fld.width, fld.precision));
-  if (fld.flag & (pls_f | blnk_f)) str_size++;
+  str_size = max(str_size, max(pattern.width, pattern.precision));
+  if (pattern.flag & (pls_f | blnk_f)) str_size++;
   char* str = calloc(str_size + 1, 1);
-  if (!str) return 0;
-  if (fld.precision == -1) fld.precision = 1;
+  if (!str) return;
+  if (pattern.precision == -1) pattern.precision = 1;
   s21_uitoa(num, str, 10);
-  do_precision_transform(str, fld, str_size);
-  do_flag_transform(str, fld, 1, str_size);
-  do_width_transform(str, fld, str_size);
+  do_precision_transform(str, pattern, str_size);
+  do_flag_transform(str, pattern, 1, str_size);
+  do_width_transform(str, pattern, str_size);
   s21_strcat(buffer, str);
   free(str);
-  return 1;
 }
 /**
  * @brief Flag transform function of compiler value.
  *
  * @param src Output string.
- * @param fld Pattern config.
+ * @param pattern Pattern config.
  * @param sign Sign of value.
  * @param size Allocated size of output string.
- * @return Function success.
- * @retval int
  */
-int do_flag_transform(char* src, Field fld, int sign, s21_size_t size) {
-  if (!fld.flag || !sign) return 1;
+void do_flag_transform(char* src, Pattern pattern, int sign, s21_size_t size) {
+  if (!pattern.flag || !sign) return;
   char* buffer = calloc(size + 1, 1);
-  if (!buffer || !size) return 0;
-  buffer[0] = fld.flag & pls_f ? '+' : fld.flag & blnk_f ? ' ' : '\0';
+  if (!buffer || !size) return;
+  buffer[0] = pattern.flag & pls_f ? '+' : pattern.flag & blnk_f ? ' ' : '\0';
   s21_strcat(buffer, src);
   s21_strcpy(src, buffer);
   free(buffer);
-  return 1;
 }
 /**
  * @brief Width transform function of compiler value.
  *
  * @param src Output string.
- * @param fld Pattern config.
+ * @param pattern Pattern config.
  * @param size Allocated size of output string.
- * @return Function success.
- * @retval int
  */
-int do_width_transform(char* src, Field fld, s21_size_t size) {
-  if (!fld.width) return 1;
+void do_width_transform(char* src, Pattern pattern, s21_size_t size) {
+  if (!pattern.width) return;
   int src_len = s21_strlen(src);
-  if (src_len < fld.width) {
-    int space_count = fld.width - src_len;
+  if (src_len < pattern.width) {
+    int space_count = pattern.width - src_len;
     char* buffer = calloc(size, 1);
-    if (!buffer) return 0;
+    if (!buffer) return;
     s21_memset(buffer, ' ', space_count);
-    if (!(fld.flag & mns_f)) {
+    if (!(pattern.flag & mns_f)) {
       s21_strcat(buffer, src);
       s21_strcpy(src, buffer);
     } else {
@@ -357,78 +338,74 @@ int do_width_transform(char* src, Field fld, s21_size_t size) {
     }
     free(buffer);
   }
-  return 1;
 }
 /**
  * @brief Precision transform function of compiler value.
  *
  * @param src Output string.
- * @param fld Pattern config.
+ * @param pattern Pattern config.
  * @param size Allocated size of output string.
- * @return Function success.
- * @retval int
  */
-int do_precision_transform(char* src, Field fld, s21_size_t size) {
-  if (fld.specifier >= d_f && fld.specifier <= i_f) {
-    char* ptr_beg_src = src;
-    char* buffer = calloc(size, 1);
-    if (!buffer) return 0;
-    char* ptr_beg_buf = buffer;
+void do_precision_transform(char* src, Pattern pattern, s21_size_t size) {
+  if (pattern.specifier >= d_f && pattern.specifier <= i_f) {
+    char *ptr_beg_src = src, *ptr_beg_buf,
+         *buffer = ptr_beg_buf = calloc(size, 1);
+    if (!buffer) return;
     if (*src == '-') {
       buffer[0] = '-';
       buffer++;
       src++;
     }
-    int null_count = fld.precision - s21_strlen(src);
-    if (null_count <= 0) return 1;
+    int null_count = pattern.precision - s21_strlen(src);
+    if (null_count <= 0) {
+      free(ptr_beg_buf);
+      return;
+    }
     s21_memset(buffer, '0', null_count);
     s21_strcat(buffer, src);
     s21_strcpy(ptr_beg_src, ptr_beg_buf);
     free(ptr_beg_buf);
   }
-  if (fld.specifier == s_f) {
-    if (!fld.precision) return 1;
-    if ((s21_size_t)fld.precision < size) src[fld.precision] = '\0';
+  if (pattern.specifier == s_f) {
+    if (!pattern.precision) return;
+    if ((s21_size_t)pattern.precision < size) src[pattern.precision] = '\0';
   }
-  return 1;
 }
 /**
  * @brief Pattern Linker.
  *
- * @param field Pattern config.
+ * @param pattern Pattern config.
  * @param buffer Output string.
  * @param args List of s21_sprintf args.
  * @return Output string.
  * @retval char*
  */
-char* compile_pattern_in_buffer(Field field, char* buffer, va_list args) {
-  int spec = field.specifier;
-  if (spec == c_f) compile_c_f(buffer, va_arg(args, int));
-  if (spec == f_f) compile_f_f(buffer, va_arg(args, double), field);
-  if (spec & (d_f | i_f | u_f | s_f)) {
-    int len = field.length;
-    if (len == l_l_f) {
-      if (spec == d_f) compile_d_f(buffer, va_arg(args, long long int), field);
-      if (spec == i_f) compile_i_f(buffer, va_arg(args, long long int), field);
-      if (spec == u_f)
-        compile_u_f(buffer, va_arg(args, long long unsigned), field);
+char* compile_pattern_in_buffer(Pattern pattern, char* buffer, va_list args) {
+  int s = pattern.specifier;
+  if (s == c_f) compile_c_f(buffer, va_arg(args, int));
+  if (s == f_f) compile_f_f(buffer, va_arg(args, double), pattern);
+  if (s & (d_f | i_f | u_f | s_f)) {
+    int l = pattern.length;
+    if (l == l_l_f) {
+      if (s == d_f) compile_d_f(buffer, va_arg(args, long long), pattern);
+      if (s == i_f) compile_i_f(buffer, va_arg(args, long long), pattern);
+      if (s == u_f)
+        compile_u_f(buffer, va_arg(args, long long unsigned), pattern);
     }
-    if (len == l_f) {
-      if (spec == s_f) compile_ws_f(buffer, va_arg(args, wchar_t*), field);
-      if (spec == d_f) compile_d_f(buffer, va_arg(args, long int), field);
-      if (spec == i_f) compile_i_f(buffer, va_arg(args, long int), field);
-      if (spec == u_f) compile_u_f(buffer, va_arg(args, long unsigned), field);
+    if (l == l_f) {
+      if (s == s_f) compile_ws_f(buffer, va_arg(args, wchar_t*), pattern);
+      if (s == d_f) compile_d_f(buffer, va_arg(args, long), pattern);
+      if (s == i_f) compile_i_f(buffer, va_arg(args, long), pattern);
+      if (s == u_f) compile_u_f(buffer, va_arg(args, long unsigned), pattern);
     }
-    if (len == h_f || len == 0) {
-      if (spec == s_f) {
-        if (len == 0)
-          compile_s_f(buffer, va_arg(args, char*), field);
-        else
-          throw_pattern_error("STRING LENGTH ERROR");
+    if (l == h_f || l == 0) {
+      if (s == s_f) {
+        if (l) throw_pattern_error("STRING LENGTH ERROR");
+        compile_s_f(buffer, va_arg(args, char*), pattern);
       }
-      if (spec == d_f) compile_d_f(buffer, va_arg(args, int), field);
-      if (spec == i_f) compile_i_f(buffer, va_arg(args, int), field);
-      if (spec == u_f) compile_u_f(buffer, va_arg(args, unsigned), field);
+      if (s == d_f) compile_d_f(buffer, va_arg(args, int), pattern);
+      if (s == i_f) compile_i_f(buffer, va_arg(args, int), pattern);
+      if (s == u_f) compile_u_f(buffer, va_arg(args, unsigned), pattern);
     }
   }
   return buffer;
@@ -445,7 +422,7 @@ char* compile_pattern_in_buffer(Field field, char* buffer, va_list args) {
 char* s21_dtoa(double x, char* res, int after_point) {
   int main_part = (int)x;
   double mantissa = x - main_part;
-  mantissa = mantissa * pow(10, after_point + 1);
+  mantissa *= pow(10, after_point + 1);
   char* c_mantissa = calloc(64 + 1, sizeof(char));
   int round_main_part =
       mantissaToStr((long long unsigned)mantissa, c_mantissa, after_point);
@@ -466,13 +443,13 @@ char* s21_dtoa(double x, char* res, int after_point) {
  * @return Output string.
  * @retval char*
  */
-char* s21_itoa(long long int num, char* res, int base) {
+char* s21_itoa(long long num, char* res, int base) {
   if (base < 2 || base > 36) {
     *res = '\0';
     return res;
   }
   char *ptr = res, *ptr1 = res, tmp_char;
-  long long int tmp_value;
+  long long tmp_value;
   do {
     tmp_value = num;
     num /= base;
@@ -590,7 +567,7 @@ void reverse_str(char* str) {
  * @return First digit.
  * @retval int
  */
-int get_first_digit(long long int num) {
+int get_first_digit(long long num) {
   int res = num % 10;
   while (num) {
     res = num % 10;
@@ -696,7 +673,7 @@ Flag_syms flag_map(int c) {
  * @return Count.
  * @retval s21_size_t
  */
-s21_size_t count_patterns(Field* fields) {
+s21_size_t count_patterns(Pattern* fields) {
   s21_size_t count = 0, i;
   for (i = 0; i < MAX_ARGS; i++)
     if (fields[i].specifier != std_f) count++;

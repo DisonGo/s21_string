@@ -1,5 +1,4 @@
-# TODO Clean ./report && report.info ?
-SOURCES		= $(shell find . -name '*.c')
+SOURCES		= $(shell find ./Functions -name '*.c')
 REPORTS		= $(shell find . -name '*.gcno') $(shell find . -name '*.gcda')
 ODIR 		=./obj
 Flags 		= -Werror -Wall -Wextra -std=c11
@@ -7,10 +6,21 @@ gcc 		= gcc $(Flags)
 INC			:= $(shell find . -name '*.h')
 OBJ 		= $(patsubst %.c,$(ODIR)/%.o, $(SOURCES))
 TEST_O		= $(ODIR)/s21_str_test.o
+UNAME_S 	:=$(shell uname -s)
 
+ifeq ($(UNAME_S),Linux)
+	TEST_CHECK_F= -lcheck
+	OPEN_CMD = xdg-open
+	ADD_LIB = -lm -lrt -lpthread
+endif
+ifeq ($(UNAME_S),Darwin)
+	TEST_CHECK_F= $(shell pkg-config --cflags --libs check)
+	OPEN_CMD = open
+	ADD_LIB =
+endif
 $(ODIR)/%.o: %.c $(INC)
-	$(gcc) $< -c -o $@
-all: clear clean test
+	$(gcc) $(ADD_LIB) $< -c -o $@
+all: clear s21_string.a
 clear:
 	clear
 clean:
@@ -18,6 +28,7 @@ clean:
 	rm -rf $(ODIR)/*.o $(ODIR)/*.gcno $(ODIR)/*.gcda
 	rm -rf $(ODIR)/*/*.o $(ODIR)/*/*.gcno $(ODIR)/*/*.gcda
 	rm -rf ./gcov/*.o ./gcov/*.gcno ./gcov/*.gcda ./gcov/*.gcov
+	rm -rf report*
 obj: $(OBJ)
 clang:
 	clang-format --style=Google -n ./*.c ./*.h ./Functions/*.c
@@ -31,16 +42,14 @@ set_debug_gcc:
 set_report_gcc:
 	$(eval gcc += -fprofile-arcs -ftest-coverage -fPIC)
 	@echo Check build
-test: s21_string.a $(TEST_O)
-	$(gcc) s21_string.a $(TEST_O) -o $@ `pkg-config --cflags --libs check`
+test: s21_str_test.c s21_string.a
+	$(gcc) $^ -o $@ $(TEST_CHECK_F) $(ADD_LIB)
 gcov_report: clean set_report_gcc test
 	./test
 	gcov *.c ./Functions/*.c -o $(ODIR)/*
 	mv *.gcov ./gcov
-	mv $(ODIR)/*.gcda $(ODIR)/*.gcno $(ODIR)/*/*.gcda $(ODIR)/*/*.gcno ./gcov
-	$(brsw)
+	mv ./*.gcda ./*.gcno $(ODIR)/*/*.gcda $(ODIR)/*/*.gcno ./gcov
 	lcov -t ./gcov -o report.info -c -d ./gcov
 	genhtml -o report report.info
-	open ./report/index.html
-
+	$(OPEN_CMD) ./report/index.html
 .PHONY: clean obj clear s21_string test clang-replace all s21_string.a set_debug_gcc set_report_gcc gcov_report

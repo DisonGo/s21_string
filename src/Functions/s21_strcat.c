@@ -8,11 +8,9 @@
  * @retval char*
  */
 char *s21_strcat(char *dest, const char *src) {
-  char *tmp = dest;
-  while (*dest) {
-    dest++;
-  }
-  while ((*dest++ = *src++) != '\0') {
-  }
-  return tmp;
+  s21_size_t len_d = s21_strlen(dest);
+  int i = 0;
+  for (; src[i] != '\0'; i++) dest[len_d + i] = src[i];
+  dest[len_d + i] = '\0';
+  return dest;
 }

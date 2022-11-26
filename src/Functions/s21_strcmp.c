@@ -11,13 +11,12 @@
  */
 int s21_strcmp(const char *str1, const char *str2) {
   int result = 0;
-  s21_size_t str_length =
-      s21_strlen(str1) > s21_strlen(str2) ? s21_strlen(str2) : s21_strlen(str1);
-  for (s21_size_t i = 0; i < str_length; i++) {
+  s21_size_t len_1 = s21_strlen(str1);
+  s21_size_t len_2 = s21_strlen(str2);
+  s21_size_t str_length = len_1 > len_2 ? len_2 : len_1;
+  for (s21_size_t i = 0; i < str_length; i++)
     if (str1[i] != str2[i] && !result) result = str1[i] - str2[i];
-  }
-  if (!result && s21_strlen(str1) != s21_strlen(str2))
-    result = s21_strlen(str1) > s21_strlen(str2) ? str1[str_length]
-                                                 : -1 * str2[str_length];
+  if (!result && len_1 != len_2)
+    result = len_1 > len_2 ? str1[str_length] : -1 * str2[str_length];
   return result;
 }
