@@ -89,8 +89,7 @@ typedef struct {
 } Pattern;
 
 // Pattern parser read states functions
-
-Pattern* read_fields(Pattern* fields, const char* pattern);
+Pattern* read_patterns(Pattern* patterns, const char* pattern);
 int std_state_func(Flag_syms flag, char* buf, char* value_buf, Pattern* pattern,
                    s21_size_t* fld_j, Read_states* cur_state);
 int flag_state_func(Flag_syms flag, Pattern* pattern, Read_states* cur_state);
@@ -121,6 +120,7 @@ void do_precision_transform(char* src, Pattern pattern, s21_size_t size);
 
 // Utility functions
 
+void init_patterns(Pattern* patterns, s21_size_t size);
 char* s21_itoa(long long num, char* res, int base);
 char* s21_uitoa(long long unsigned num, char* res, int base);
 char* s21_dtoa(double x, char* res, int after_point);
@@ -128,11 +128,10 @@ int mantissaToStr(unsigned long long x, char* str, int req_c);
 void reverse_str(char* str);
 void throw_pattern_error(const char* error);
 void resetBuffer(char* str, s21_size_t size);
-void init_fields(Pattern* fields, s21_size_t size);
 int max(int a, int b);
 int min(int a, int b);
 int get_first_digit(long long num);
 int round_if(int last_num, int i, int d, int last_round);
-s21_size_t count_patterns(Pattern* fields);
+
 Flag_syms flag_map(int c);
 #endif  // S21_SPRINTF_H_

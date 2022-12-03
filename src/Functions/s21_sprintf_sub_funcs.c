@@ -666,16 +666,3 @@ Flag_syms flag_map(int c) {
   }
   return flag;
 }
-/**
- * @brief Count not empty patterns in array.
- *
- * @param fields Array of patterns.
- * @return Count.
- * @retval s21_size_t
- */
-s21_size_t count_patterns(Pattern* fields) {
-  s21_size_t count = 0, i;
-  for (i = 0; i < MAX_ARGS; i++)
-    if (fields[i].specifier != std_f) count++;
-  return count;
-}
