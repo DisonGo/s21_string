@@ -129,6 +129,7 @@ void do_precision_transform(char* src, Pattern pattern, s21_size_t size);
 
 // Utility functions
 
+void init_patterns(Pattern* patterns, s21_size_t size);
 char* s21_itoa(long long num, char* res, int base);
 char* s21_uitoa(long long unsigned num, char* res, int base);
 char* s21_dtoa(double x, char* res, int after_point);
@@ -136,10 +137,10 @@ int mantissaToStr(unsigned long long x, char* str, int req_c);
 void reverse_str(char* str);
 void throw_pattern_error(const char* error);
 void resetBuffer(char* str, s21_size_t size);
-void init_patterns(Pattern* fields, s21_size_t size);
 int max(int a, int b);
 int min(int a, int b);
 int get_first_digit(long long num);
 int round_if(int last_num, int i, int d, int last_round);
 
-#endif //  S21_SPRINTF_H_
+Flag_syms flag_map(int c);
+#endif  // S21_SPRINTF_H_
