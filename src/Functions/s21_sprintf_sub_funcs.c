@@ -4,17 +4,16 @@
 /**
  * @brief Pattern parser std_state read fucntion.
  *
- * @param[in] flag Flag of symbol of current char in pattern string.
- * @param[in] buf Pointer on current position in pattern string.
- * @param[out] value_buf Buffer string of value.
- * @param[out] pattern Array of parsed patterns.
- * @param[in] fld_j Pointer index of current parsing pattern.
- * @param[out] cur_state Pointer to current read state of parser.
+ * @param data Data of pattern parser
  * @return Bool - if cur_state was switched.
  * @retval int
  */
-int std_state_func(Flag_syms flag, char* buf, char* value_buf, Pattern* pattern,
-                   s21_size_t* fld_j, Read_states* cur_state) {
+int std_state_func(State_data* data) {
+  if (!is_State_data_valid(data)) return 1;
+  Flag_syms flag = data->flag;
+  char* value_buf = data->value_buffer;
+  char* buf = data->buffer;
+  Pattern* pattern = &data->patterns[data->j];
   int res = 0;
   if (!(flag & prcnt_f)) s21_strncat(value_buf, buf, 1);
   if ((flag & prcnt_f || *(buf + 1) == '\0')) {
@@ -22,9 +21,9 @@ int std_state_func(Flag_syms flag, char* buf, char* value_buf, Pattern* pattern,
       pattern->specifier = std_f;
       s21_strcpy(pattern->value, value_buf);
       resetBuffer(value_buf, VALLUE_BUF_SIZE);
-      (*fld_j)++;
+      data->j++;
     }
-    *cur_state = flag_state;
+    data->cur_state = flag_state;
     res = 1;
   }
   return res;
@@ -32,14 +31,15 @@ int std_state_func(Flag_syms flag, char* buf, char* value_buf, Pattern* pattern,
 /**
  * @brief Pattern parser flag_state read fucntion.
  *
- * @param[in] flag Flag of symbol of current char in pattern string.
- * @param[in] buf Pointer on current position in pattern string.
- * @param[out] value_buf Buffer string of value.
+ * @param data Data of pattern parser
  * @return Bool - if cur_state was switched.
  * @retval int
  */
-int flag_state_func(Flag_syms flag, Pattern* pattern, Read_states* cur_state) {
-  int *f = &pattern->flag, res = 0;
+int flag_state_func(State_data* data) {
+  if (!is_State_data_valid(data)) return 1;
+  Flag_syms flag = data->flag;
+  int* f = &data->patterns[data->j].flag;
+  int res = 0;
   if (flag == mns_f) *f |= mns_f;
   if (flag == pls_f) {
     if (*f & blnk_f) *f ^= blnk_f;
@@ -47,7 +47,7 @@ int flag_state_func(Flag_syms flag, Pattern* pattern, Read_states* cur_state) {
   }
   if (flag == blnk_f && !(*f & pls_f)) *f |= blnk_f;
   if (!(flag >= mns_f && flag <= blnk_f)) {
-    *cur_state = width_state;
+    data->cur_state = width_state;
     res = 1;
   }
   return res;
@@ -55,78 +55,82 @@ int flag_state_func(Flag_syms flag, Pattern* pattern, Read_states* cur_state) {
 /**
  * @brief Pattern parser width_state read fucntion.
  *
- * @param[in] flag Pointer to flag of symbol of current char in pattern string.
- * @param[in] buf Pointer to pointer on current position in pattern string.
- * @param[out] pattern Array of parsed patterns.
- * @param[out] cur_state Pointer to current read state of parser.
+ * @param data Data of pattern parser
  * @return Bool - if cur_state was switched.
  * @retval int
  */
-int width_state_func(Flag_syms* flag, char** buf, Pattern* pattern,
-                     Read_states* cur_state) {
+int width_state_func(State_data* data) {
+  if (!is_State_data_valid(data)) return 1;
+  Pattern* pattern = &data->patterns[data->j];
+  char* buf = data->buffer;
   char* num = calloc(16, sizeof(char));
   char* num_beg = num;
   if (!num) throw_pattern_error(WIDTH_STATE_ERROR " " MEMORY_ERROR);
-  if (s21_strchr(DECIMAL_NUMS, **buf)) {
-    if (**buf == '0') throw_pattern_error(WIDTH_STATE_ERROR " Bad num");
-    while (**buf != '\0' && (*flag = flag_map(**buf)) == std_f) {
-      *num++ = **buf;
-      (*buf)++;
+  if (CHAR_IS_DECIMAL(*buf)) {
+    if (*buf == '0') throw_pattern_error(WIDTH_STATE_ERROR " Bad num");
+    while (*buf != '\0' && data->flag == std_f) {
+      *num++ = *buf;
+      buf++;
+      data->flag = flag_map(*buf);
     }
     int width = atoi(num_beg);
     if (width == 0) throw_pattern_error(WIDTH_STATE_ERROR " width = 0");
     pattern->width = width;
   }
   free(num_beg);
-  *cur_state = precise_state;
+  data->buffer = buf;
+  data->cur_state = precise_state;
   return 1;
 }
 /**
  * @brief Pattern parser precision_state read fucntion.
  *
- * @param[in] flag Pointer to flag of symbol of current char in pattern string.
- * @param[in] buf Pointer to pointer on current position in pattern string.
- * @param[out] pattern Array of parsed patterns.
- * @param[out] cur_state Pointer to current read state of parser.
- * @return Bool - if cur_state was switched.
+ * @param data Data of pattern parser
  * @retval int
  */
-int precision_state_func(Flag_syms* flag, char** buf, Pattern* pattern,
-                         Read_states* cur_state) {
-  if (*flag == dot_f) {
-    (*buf)++;
+int precision_state_func(State_data* data) {
+  if (!is_State_data_valid(data)) return 1;
+  if (data->flag == dot_f) {
+    Pattern* pattern = &data->patterns[data->j];
+    char* buf = ++data->buffer;
+    data->flag = flag_map(*buf);
     char* num = calloc(16, sizeof(char));
-    if (!num) throw_pattern_error(PRECISE_STATE_ERROR " " MEMORY_ERROR);
     char* num_beg = num;
-    int precision = 0, chr_is_num = s21_strchr(DECIMAL_NUMS, **buf) ? 1 : 0;
-    if (!chr_is_num) *flag = flag_map(**buf);
-    if (chr_is_num) {
-      while (**buf != '\0' && (*flag = flag_map(**buf)) == std_f) {
-        *num++ = **buf;
-        (*buf)++;
+    int precision = 0;
+    if (!num) throw_pattern_error(PRECISE_STATE_ERROR " " MEMORY_ERROR);
+    if (!CHAR_IS_DECIMAL(*buf)) {
+      data->flag = flag_map(*buf);
+    } else {
+      while (*buf != '\0' && data->flag == std_f) {
+        *num++ = *buf;
+        buf++;
+        data->flag = flag_map(*buf);
       }
       if (*num_beg == '0' && *(num_beg + 1) != '\0')
         throw_pattern_error(PRECISE_STATE_ERROR " Bad num");
       precision = atoi(num_beg);
     }
     pattern->precision = precision;
+    data->buffer = buf;
     free(num_beg);
   }
-  *cur_state = length_state;
+  data->cur_state = length_state;
   return 1;
 }
 /**
  * @brief Pattern parser length_state read fucntion.
  *
- * @param[in] flag Flag of symbol of current char in pattern string.
- * @param[out] pattern Array of parsed patterns.
- * @param[out] cur_state Pointer to current read state of parser.
+ * @param data Data of pattern parser
  * @return Bool - if cur_state was switched.
  * @retval int
  */
-int length_state_func(Flag_syms flag, Pattern* pattern,
-                      Read_states* cur_state) {
-  int l = pattern->length, err = 0, res = 1;
+int length_state_func(State_data* data) {
+  if (!is_State_data_valid(data)) return 1;
+  Pattern* pattern = &data->patterns[data->j];
+  Flag_syms flag = data->flag;
+  int l = pattern->length;
+  int err = 0;
+  int res = 1;
   if (flag >= h_f && flag <= l_f) {
     if (flag == l_f) {
       if (l == l_f)
@@ -144,21 +148,19 @@ int length_state_func(Flag_syms flag, Pattern* pattern,
     res = 0;
   }
   pattern->length = l;
-  if (res) *cur_state = specifier_state;
+  if (res) data->cur_state = specifier_state;
   return res;
 }
 /**
  * @brief Pattern parser specifier_state read fucntion.
  *
- * @param[in] flag Flag of symbol of current char in pattern string.
- * @param[out] pattern Array of parsed patterns.
- * @param[in] fld_j Pointer to index of current parsing pattern.
- * @param[out] cur_state Pointer to current read state of parser.
+ * @param data Data of pattern parser
  * @return Bool - if cur_state was switched.
  * @retval int
  */
-int specifier_state_func(Flag_syms flag, Pattern* pattern, s21_size_t* fld_j,
-                         Read_states* cur_state) {
+int specifier_state_func(State_data* data) {
+  Pattern* pattern = &data->patterns[data->j];
+  Flag_syms flag = data->flag;
   if (!((flag >= c_f && flag <= u_f) || flag == prcnt_f))
     throw_pattern_error(SPECIFIER_STATE_ERROR);
   pattern->specifier = flag;
@@ -166,10 +168,23 @@ int specifier_state_func(Flag_syms flag, Pattern* pattern, s21_size_t* fld_j,
     pattern->specifier = std_f;
     s21_strcpy(pattern->value, "%");
   }
-  (*fld_j)++;
-  *cur_state = std_state;
+  data->j++;
+  data->cur_state = std_state;
   return 1;
 }
+/**
+ * @brief State_data pointer validator.
+ *
+ * @param data Validating pointer.
+ * @return Bool - if data is valid.
+ */
+int is_State_data_valid(State_data* data) {
+  if (!data) return 0;
+  if (!data->buffer || !data->patterns || !data->value_buffer) return 0;
+  if (data->j > MAX_ARGS) return 0;
+  return 1;
+}
+
 /**
  * @brief Compiler of char specifier for Linker.
  *

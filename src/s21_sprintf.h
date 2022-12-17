@@ -38,6 +38,9 @@
 #ifndef DECIMAL_NUMS
 #define DECIMAL_NUMS "012345689"
 #endif  // DECIMAL_NUMS
+#ifndef CHAR_IS_DECIMAL
+#define CHAR_IS_DECIMAL(x) !!s21_strchr(DECIMAL_NUMS, x)
+#endif  // DECIMAL_NUMS
 #ifndef ITOA_SYM_MAP
 #define ITOA_SYM_MAP           \
   "zyxwvutsrqponmlkjihgfedcba" \
@@ -88,19 +91,25 @@ typedef struct {
   char value[VALLUE_BUF_SIZE];
 } Pattern;
 
+typedef struct _State_data {
+  Flag_syms flag;
+  Read_states cur_state;
+  Pattern* patterns;
+  s21_size_t j;
+  char* buffer;
+  char* value_buffer;
+} State_data;
 // Pattern parser read states functions
-Pattern* read_patterns(Pattern* patterns, const char* pattern);
-int std_state_func(Flag_syms flag, char* buf, char* value_buf, Pattern* pattern,
-                   s21_size_t* fld_j, Read_states* cur_state);
-int flag_state_func(Flag_syms flag, Pattern* pattern, Read_states* cur_state);
-int width_state_func(Flag_syms* flag, char** buf, Pattern* pattern,
-                     Read_states* cur_state);
-int precision_state_func(Flag_syms* flag, char** buf, Pattern* pattern,
-                         Read_states* cur_state);
-int length_state_func(Flag_syms flag, Pattern* pattern, Read_states* cur_state);
-int specifier_state_func(Flag_syms flag, Pattern* pattern, s21_size_t* fld_j,
-                         Read_states* cur_state);
 
+Pattern* read_patterns(Pattern* fields, const char* pattern);
+int std_state_func(State_data* data);
+int flag_state_func(State_data* data);
+int width_state_func(State_data* data);
+int precision_state_func(State_data* data);
+int length_state_func(State_data* data);
+int specifier_state_func(State_data* data);
+
+int is_State_data_valid(State_data* data);
 // (Pattern x argument) linker functions
 
 char* compile_pattern_in_buffer(Pattern pattern, char* buffer, va_list args);

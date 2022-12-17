@@ -36,30 +36,26 @@ int s21_sprintf(char* str, const char* format, ...) {
  * @retval Pattern*
  */
 Pattern* read_patterns(Pattern* patterns, const char* pattern) {
-  char* buf = calloc(s21_strlen(pattern) + 1, sizeof(char));
-  char* buf_beg = buf;
-  if (!buf) return S21_NULL;
-  s21_strcpy(buf, pattern);
+  State_data data = {0};
+  data.buffer = calloc(s21_strlen(pattern) + 1, sizeof(char));
+  char* buf_beg = data.buffer;
+  if (!data.buffer) return S21_NULL;
+  s21_strcpy(data.buffer, pattern);
   char value_buf[VALLUE_BUF_SIZE] = "";
-  Read_states cur_state = std_state;
-  for (s21_size_t j = 0; *buf != '\0' && j < MAX_ARGS; buf++) {
-    Flag_syms flag = flag_map(*buf);
-    if (cur_state == std_state)
-      if (std_state_func(flag, buf, value_buf, &patterns[j], &j, &cur_state))
-        continue;
-    if (cur_state == flag_state)
-      flag_state_func(flag, &patterns[j], &cur_state);
-    if (cur_state == width_state)
-      width_state_func(&flag, &buf, &patterns[j], &cur_state);
-    if (cur_state == precise_state)
-      precision_state_func(&flag, &buf, &patterns[j], &cur_state);
-    if (cur_state == length_state)
-      if (!length_state_func(flag, &patterns[j], &cur_state)) continue;
-    if (cur_state == specifier_state)
-      specifier_state_func(flag, &patterns[j], &j, &cur_state);
+  data.value_buffer = value_buf;
+  data.cur_state = std_state;
+  data.patterns = patterns;
+  for (data.j = 0; *data.buffer != '\0' && data.j < MAX_ARGS; data.buffer++) {
+    data.flag = flag_map(*data.buffer);
+    if (data.cur_state == std_state && std_state_func(&data)) continue;
+    if (data.cur_state == flag_state) flag_state_func(&data);
+    if (data.cur_state == width_state) width_state_func(&data);
+    if (data.cur_state == precise_state) precision_state_func(&data);
+    if (data.cur_state == length_state && !length_state_func(&data)) continue;
+    if (data.cur_state == specifier_state) specifier_state_func(&data);
   }
   free(buf_beg);
-  return patterns;
+  return data.patterns;
 }
 /**
  * @brief Initialize function for patter array.
